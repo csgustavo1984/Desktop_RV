@@ -640,6 +640,38 @@
             .docs-grid { grid-template-columns: 1fr; }
         }
 
+        /* ── SUB-NAV ── */
+        .subnav {
+            background: var(--dark-3);
+            border-bottom: 1px solid var(--dark-4);
+            padding: 0 28px;
+            position: sticky;
+            top: 56px;
+            z-index: 190;
+        }
+        .subnav-inner {
+            display: flex; align-items: center; gap: 20px;
+            height: 44px; max-width: 1360px; margin: 0 auto;
+        }
+        .subnav-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--text-dim); flex-shrink: 0;
+        }
+        .subnav-tabs { display: flex; gap: 4px; }
+        .subnav-tab {
+            font-size: 12px; font-weight: 600; padding: 6px 14px;
+            border-radius: var(--radius-sm); text-decoration: none;
+            color: var(--text-muted); border: 1px solid transparent;
+            transition: all var(--tr);
+        }
+        .subnav-tab:hover { color: var(--text); background: var(--dark-4); }
+        .subnav-tab.active {
+            color: var(--gold); background: rgba(201,168,76,0.1);
+            border-color: rgba(201,168,76,0.3);
+        }
+        .subnav-tab.soon { color: var(--text-dim); cursor: default; font-style: italic; }
+        .subnav-tab.soon:hover { color: var(--text-dim); background: transparent; }
+
         /* ── FOOTER ── */
         .page-footer {
             margin-top: 32px;
@@ -685,6 +717,19 @@
     <div class="topnav-right">
         <span class="month-badge">Maio 2026</span>
         <span class="mod-tag">M01</span>
+    </div>
+</nav>
+
+<!-- SUB-NAV -->
+<nav class="subnav">
+    <div class="subnav-inner">
+        <span class="subnav-label">Carteiras Safra</span>
+        <div class="subnav-tabs">
+            <a href="M01_carteiras_safra.html" class="subnav-tab active">TOP 10 Ações</a>
+            <a href="M01_carteiras_bdr.html"   class="subnav-tab">TOP 10 BDRs</a>
+            <span class="subnav-tab soon">Dividendos · em breve</span>
+            <span class="subnav-tab soon">FIIs · em breve</span>
+        </div>
     </div>
 </nav>
 
