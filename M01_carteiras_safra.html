@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carteira TOP 10 Ações · Safra · Maio 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --gold:        #C9A84C;
+            --gold-light:  #E8C96A;
+            --gold-dim:    #8B6914;
+            --dark:        #0A0E1A;
+            --dark-2:      #111827;
+            --dark-3:      #1C2537;
+            --dark-4:      #243044;
+            --dark-5:      #2D3B55;
+            --text:        #F0F2F5;
+            --text-muted:  #8A97B0;
+            --text-dim:    #5A6880;
+            --green:       #2ECC71;
+            --green-dim:   rgba(46,204,113,0.12);
+            --red:         #E74C3C;
+            --red-dim:     rgba(231,76,60,0.12);
+            --blue:        #3498DB;
+            --orange:      #F39C12;
+            --purple:      #9B59B6;
+            --teal:        #1ABC9C;
+            --radius:      10px;
+            --radius-sm:   6px;
+            --gap:         16px;
+            --tr:          0.18s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ── TOP NAV ── */
+        .topnav {
+            background: var(--dark-2);
+            border-bottom: 1px solid rgba(201,168,76,0.18);
+            padding: 0 28px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        .topnav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--dark-5);
+            transition: all var(--tr);
+        }
+        .back-btn:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .breadcrumb span { color: var(--text); font-weight: 600; }
+
+        .topnav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .month-badge {
+            background: rgba(201,168,76,0.12);
+            border: 1px solid rgba(201,168,76,0.35);
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .mod-tag {
+            font-size: 10px;
+            color: var(--text-dim);
+            background: var(--dark-4);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--dark-5);
+        }
+
+        /* ── HERO HEADER ── */
+        .hero {
+            background: linear-gradient(135deg, var(--dark-2) 0%, var(--dark-3) 60%, #1a2035 100%);
+            border-bottom: 1px solid rgba(201,168,76,0.12);
+            padding: 28px 28px 24px;
+        }
+
+        .hero-inner {
+            max-width: 1360px;
+            margin: 0 auto;
+        }
+
+        .hero-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .hero-title-block h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1.2;
+        }
+        .hero-title-block h1 em {
+            font-style: normal;
+            color: var(--gold);
+        }
+
+        .hero-title-block p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .hero-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .analyst-chip {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--dark-4);
+            border: 1px solid var(--dark-5);
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .ibov-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        /* ── KPI ROW ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--gap);
+        }
+
+        .kpi-card {
+            background: var(--dark-3);
+            border: 1px solid var(--dark-5);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+        }
+
+        .kpi-card.pos::after { background: var(--green); }
+        .kpi-card.neg::after { background: var(--red); }
+        .kpi-card.neu::after { background: var(--gold); }
+
+        .kpi-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .kpi-value {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .kpi-value.pos { color: var(--green); }
+        .kpi-value.neg { color: var(--red); }
+        .kpi-value.neu { color: var(--gold); }
+
+        .kpi-vs {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .kpi-vs b { color: var(--text-muted); }
+
+        /* ── LAYOUT ── */
+        .page {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 24px 28px 48px;
+        }
+
+        .row {
+            display: grid;
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+        .row-2 { grid-template-columns: 1fr 1fr; }
+        .row-3-2 { grid-template-columns: 3fr 2fr; }
+        .row-2-1 { grid-template-columns: 2fr 1fr; }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--dark-2);
+            border: 1px solid var(--dark-4);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title-note {
+            font-size: 10px;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--text-dim);
+        }
+
+        /* ── CHART ── */
+        .chart-wrap {
+            position: relative;
+            height: 220px;
+        }
+
+        /* ── COMPOSITION TABLE ── */
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .comp-table thead th {
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--dark-4);
+            white-space: nowrap;
+        }
+        .comp-table thead th.right { text-align: right; }
+        .comp-table thead th.center { text-align: center; }
+
+        .comp-table tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background var(--tr);
+        }
+        .comp-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+        .comp-table tbody tr:last-child { border-bottom: none; }
+
+        .comp-table tbody td {
+            padding: 10px 10px;
+            vertical-align: middle;
+        }
+        .comp-table tbody td.right { text-align: right; }
+        .comp-table tbody td.center { text-align: center; }
+
+        .ticker-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ticker-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            flex-shrink: 0;
+        }
+
+        .ticker-name { font-weight: 700; color: var(--text); font-size: 13px; }
+        .ticker-company { font-size: 11px; color: var(--text-muted); }
+
+        .sector-pill {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .pl-val { font-weight: 600; color: var(--text); }
+        .price-val { font-weight: 600; color: var(--text); }
+
+        .weight-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .weight-bar {
+            flex: 1;
+            height: 5px;
+            background: var(--dark-4);
+            border-radius: 3px;
+            overflow: hidden;
+            min-width: 60px;
+        }
+
+        .weight-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--gold);
+            transition: width 0.6s ease;
+        }
+
+        .weight-pct {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text);
+            min-width: 36px;
+            text-align: right;
+        }
+
+        .delta-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .delta-new  { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+        .delta-same { background: var(--dark-4); color: var(--text-dim); border: 1px solid var(--dark-5); }
+        .delta-up   { background: rgba(46,204,113,0.15); color: var(--green); }
+        .delta-down { background: rgba(231,76,60,0.15); color: var(--red); }
+
+        /* ── CHANGES SECTION ── */
+        .changes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--gap);
+        }
+
+        .change-card {
+            border-radius: var(--radius);
+            padding: 18px 20px;
+        }
+
+        .change-card.out {
+            background: var(--red-dim);
+            border: 1px solid rgba(231,76,60,0.25);
+        }
+
+        .change-card.in {
+            background: var(--green-dim);
+            border: 1px solid rgba(46,204,113,0.25);
+        }
+
+        .change-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .change-label.out { color: var(--red); }
+        .change-label.in  { color: var(--green); }
+
+        .change-arrow {
+            font-size: 16px;
+        }
+
+        .change-ticker {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .change-company {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .change-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ── THESIS ACCORDION ── */
+        .thesis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .thesis-item {
+            background: var(--dark-3);
+            border: 1px solid var(--dark-4);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .thesis-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: background var(--tr);
+            user-select: none;
+        }
+
+        .thesis-header:hover { background: var(--dark-4); }
+
+        .thesis-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .thesis-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            flex-shrink: 0;
+        }
+
+        .thesis-ticker { font-size: 13px; font-weight: 700; }
+        .thesis-company { font-size: 11px; color: var(--text-muted); }
+
+        .thesis-toggle {
+            font-size: 10px;
+            color: var(--text-dim);
+            transition: transform var(--tr);
+        }
+
+        .thesis-item.open .thesis-toggle { transform: rotate(180deg); }
+
+        .thesis-body {
+            display: none;
+            padding: 0 14px 14px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.65;
+            border-top: 1px solid var(--dark-4);
+        }
+
+        .thesis-body.show { display: block; }
+
+        .thesis-body p { padding-top: 12px; }
+
+        /* ── SECTOR LEGEND ── */
+        .legend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .legend-label { color: var(--text-muted); flex: 1; }
+        .legend-pct { font-weight: 700; color: var(--text); }
+
+        /* ── DOCUMENTS ── */
+        .docs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .doc-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--dark-3);
+            border: 1px solid var(--dark-5);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            transition: border-color var(--tr);
+        }
+
+        .doc-item:hover { border-color: rgba(201,168,76,0.35); }
+
+        .doc-file-icon {
+            width: 40px;
+            height: 48px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            gap: 3px;
+        }
+
+        .doc-file-icon.pdf {
+            background: rgba(231,76,60,0.15);
+            border: 1px solid rgba(231,76,60,0.3);
+            color: #E74C3C;
+        }
+
+        .doc-file-icon.doc {
+            background: rgba(52,152,219,0.15);
+            border: 1px solid rgba(52,152,219,0.3);
+            color: #3498DB;
+        }
+
+        .doc-file-icon svg { width: 18px; height: 18px; }
+
+        .doc-info { flex: 1; min-width: 0; }
+
+        .doc-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
+        }
+
+        .doc-meta {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        .doc-actions { display: flex; gap: 6px; }
+
+        .doc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 11px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all var(--tr);
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .doc-btn.primary {
+            background: rgba(201,168,76,0.12);
+            border-color: rgba(201,168,76,0.35);
+            color: var(--gold);
+        }
+        .doc-btn.primary:hover {
+            background: rgba(201,168,76,0.22);
+            border-color: var(--gold);
+        }
+
+        .doc-btn.secondary {
+            background: var(--dark-4);
+            border-color: var(--dark-5);
+            color: var(--text-muted);
+        }
+        .doc-btn.secondary:hover {
+            background: var(--dark-5);
+            color: var(--text);
+        }
+
+        @media (max-width: 700px) {
+            .docs-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── FOOTER ── */
+        .page-footer {
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid var(--dark-4);
+            font-size: 10px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* ── UTILITIES ── */
+        .pos { color: var(--green) !important; }
+        .neg { color: var(--red) !important; }
+
+        .section-gap { margin-bottom: var(--gap); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1100px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 860px) {
+            .row-3-2, .row-2-1, .row-2 { grid-template-columns: 1fr; }
+            .changes-grid, .thesis-grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero-top { flex-direction: column; }
+        }
+
+        @media print {
+            .topnav { display: none; }
+            body { background: #fff; color: #000; }
+            .card { background: #fff; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+    <div class="topnav-left">
+        <a href="index.html" class="back-btn">← Hub</a>
+        <div class="breadcrumb">Carteiras Safra · <span>TOP 10 Ações</span></div>
+    </div>
+    <div class="topnav-right">
+        <span class="month-badge">Maio 2026</span>
+        <span class="mod-tag">M01</span>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-top">
+            <div class="hero-title-block">
+                <h1>Carteira Safra <em>TOP 10 Ações</em></h1>
+                <p>Recomendações para maio · Cotações de fechamento em 30/04/2026</p>
+                <div class="hero-meta">
+                    <span class="analyst-chip">Cauê Pinheiro · Estrategista</span>
+                    <span class="analyst-chip">Yves Adam, CFA · Estrategista</span>
+                    <span class="analyst-chip">Luana Nunes · Estrategista</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI ROW -->
+        <div class="kpi-grid">
+            <div class="kpi-card neg">
+                <div class="kpi-label">Abril / 2026</div>
+                <div class="kpi-value neg">−0,34%</div>
+                <div class="kpi-vs">Ibov: <b>−0,08%</b> · CDI: <b>+1,09%</b></div>
+            </div>
+            <div class="kpi-card pos">
+                <div class="kpi-label">No ano (2026)</div>
+                <div class="kpi-value pos">+18,18%</div>
+                <div class="kpi-vs">Ibov: <b>+16,26%</b> · CDI: <b>+4,49%</b></div>
+            </div>
+            <div class="kpi-card pos">
+                <div class="kpi-label">Últimos 12 meses</div>
+                <div class="kpi-value pos">+45,48%</div>
+                <div class="kpi-vs">Ibov: <b>+38,68%</b> · CDI: <b>+14,65%</b></div>
+            </div>
+            <div class="kpi-card pos">
+                <div class="kpi-label">Desde o início (Jan/12)</div>
+                <div class="kpi-value pos">+399,20%</div>
+                <div class="kpi-vs">Ibov: <b>+220,89%</b> · CDI: <b>+273,87%</b></div>
+            </div>
+            <div class="kpi-card neu">
+                <div class="kpi-label">Meses acima do Ibov</div>
+                <div class="kpi-value neu">57,6%</div>
+                <div class="kpi-vs">99 de 172 meses</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PAGE BODY -->
+<main class="page">
+
+    <!-- ROW 1: Performance Chart + Sector Allocation -->
+    <div class="row row-3-2 section-gap">
+
+        <!-- Performance 12m -->
+        <div class="card">
+            <div class="card-title">
+                Performance mensal — últimos 12 meses
+                <span class="card-title-note">Carteira vs Ibovespa</span>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="chartPerf"></canvas>
+            </div>
+        </div>
+
+        <!-- Sector allocation -->
+        <div class="card">
+            <div class="card-title">Alocação por setor</div>
+            <div style="display:flex; gap:20px; align-items:center; height:220px;">
+                <div style="flex:1; position:relative; height:100%;">
+                    <canvas id="chartSector"></canvas>
+                </div>
+                <div class="legend-list" id="sectorLegend" style="flex:0 0 auto; min-width:160px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROW 2: Composition Table -->
+    <div class="card section-gap">
+        <div class="card-title">
+            Composição da carteira · Maio 2026
+            <span class="card-title-note">10 posições · 100% alocado</span>
+        </div>
+        <table class="comp-table" id="compTable">
+            <thead>
+                <tr>
+                    <th>Ativo</th>
+                    <th>Setor</th>
+                    <th class="right">Cotação (R$)</th>
+                    <th class="right">P/L 2026E</th>
+                    <th class="right">Peso Anterior</th>
+                    <th>Peso Atual</th>
+                    <th class="center">Alteração</th>
+                </tr>
+            </thead>
+            <tbody id="compBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ROW 3: Changes -->
+    <div class="card section-gap">
+        <div class="card-title">Mudanças do mês</div>
+        <div class="changes-grid">
+            <div class="change-card out">
+                <div class="change-label out"><span class="change-arrow">↓</span> Exclusão</div>
+                <div class="change-ticker">VIVT3</div>
+                <div class="change-company">Telefônica Brasil · Telecomunicações</div>
+                <div class="change-text">
+                    Removida após expressiva reprecificação nos últimos anos. Indicações recentes de aumento de competição no setor, após período de crescimento real de receitas, margens e lucros, levaram à retirada. A Telefônica Brasil permanece como preferência setorial do Safra, mas o risco de compressão futura de margens justifica a saída da carteira no momento.
+                </div>
+            </div>
+            <div class="change-card in">
+                <div class="change-label in"><span class="change-arrow">↑</span> Inclusão · Peso: 10%</div>
+                <div class="change-ticker">EQTL3</div>
+                <div class="change-company">Equatorial · Utilidades Básicas</div>
+                <div class="change-text">
+                    Incluída por valuation atrativo em relação ao setor — TIR real estimada de 10% a.a., acima da média setorial, e negociando abaixo do prêmio histórico. Performance das ações abaixo do setor e da subsidiária Sabesp cria oportunidade de compra. Excelente histórico de alocação de capital, com prévia operacional indicando melhora no braço de distribuição de energia.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROW 4: Thesis accordion -->
+    <div class="card">
+        <div class="card-title">
+            Teses das posições
+            <span class="card-title-note">Clique para expandir</span>
+        </div>
+        <div class="thesis-grid" id="thesisGrid"></div>
+    </div>
+
+    <!-- DOCUMENTOS DE SUPORTE -->
+    <div class="card section-gap">
+        <div class="card-title">
+            Documentos de suporte
+            <span class="card-title-note">Clique para abrir ou baixar</span>
+        </div>
+        <div class="docs-grid">
+
+            <!-- FAQ_ajustado.pdf -->
+            <div class="doc-item">
+                <div class="doc-file-icon pdf">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    PDF
+                </div>
+                <div class="doc-info">
+                    <div class="doc-name">FAQ Ajustado</div>
+                    <div class="doc-meta">PDF · Perguntas frequentes sobre a carteira TOP 10</div>
+                    <div class="doc-actions">
+                        <a class="doc-btn primary"
+                           href="Carteiras recomendadas Safra/TOP 10 AÇÕES/FAQ_ajustado.pdf"
+                           target="_blank" rel="noopener">
+                            ↗ Abrir
+                        </a>
+                        <a class="doc-btn secondary"
+                           href="Carteiras recomendadas Safra/TOP 10 AÇÕES/FAQ_ajustado.pdf"
+                           download="FAQ_ajustado.pdf">
+                            ↓ Baixar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DOM 7436.doc -->
+            <div class="doc-item">
+                <div class="doc-file-icon doc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    DOC
+                </div>
+                <div class="doc-info">
+                    <div class="doc-name">DOM 7436</div>
+                    <div class="doc-meta">Word · Documento operacional de referência</div>
+                    <div class="doc-actions">
+                        <a class="doc-btn primary"
+                           href="Carteiras recomendadas Safra/TOP 10 AÇÕES/DOM 7436.doc"
+                           download="DOM 7436.doc">
+                            ↓ Baixar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FOOTER DISCLAIMER -->
+    <div class="page-footer">
+        <strong>Aviso importante:</strong> Este material é baseado no relatório "Carteira Safra TOP 10 Ações — Maio 2026", preparado e distribuído pela Safra Wealth Distribuidora de Títulos e Valores Mobiliários Ltda. ("Safra Corretora"), subsidiária do Banco Safra S.A., regulada pela CVM. Caráter meramente informativo — não constitui oferta de compra ou venda de valores mobiliários. Desempenho passado não garante resultados futuros. Rentabilidade apresentada com reinvestimento de dividendos.
+    </div>
+
+</main>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+
+const PORTFOLIO = [
+    { ticker:'ITSA4', company:'Itaúsa',         sector:'Serviços Financeiros', price:13.92, pl:5.5,  prev:16, curr:16, status:'same' },
+    { ticker:'VALE3', company:'Vale',            sector:'Mineração & Siderurgia', price:81.18, pl:8.0,  prev:12, curr:12, status:'same' },
+    { ticker:'BBDC4', company:'Bradesco',        sector:'Serviços Financeiros', price:19.32, pl:7.5,  prev:10, curr:10, status:'same' },
+    { ticker:'PETR4', company:'Petrobras',       sector:'Óleo e Gás',           price:49.08, pl:7.5,  prev:10, curr:10, status:'same' },
+    { ticker:'MULT3', company:'Multiplan',       sector:'Shopping Center',      price:31.72, pl:15.3, prev:10, curr:10, status:'same' },
+    { ticker:'EQTL3', company:'Equatorial',      sector:'Utilidades Básicas',   price:42.32, pl:11.2, prev:0,  curr:10, status:'new'  },
+    { ticker:'CPLE3', company:'Copel',           sector:'Utilidades Básicas',   price:15.90, pl:11.9, prev:10, curr:10, status:'same' },
+    { ticker:'MOTV3', company:'Motiva',          sector:'Transportes',          price:16.00, pl:11.5, prev:8,  curr:8,  status:'same' },
+    { ticker:'DIRR3', company:'Direcional',      sector:'Construtoras',         price:12.85, pl:6.9,  prev:8,  curr:8,  status:'same' },
+    { ticker:'RADL3', company:'Raia Drogasil',   sector:'Consumo Básico',       price:21.94, pl:22.3, prev:6,  curr:6,  status:'same' },
+];
+
+const THESIS = {
+    ITSA4: `Gostamos de ITSA por refletir o bom momento de resultados do Itaú com desconto de holding de mais de 20%. Vemos o Itaú como o nome de maior qualidade no setor bancário — maior resiliência em ciclos monetários mais apertados, além da capacidade de inovar e aumentar a rentabilidade, com melhor controle de indicadores de qualidade de crédito frente aos pares.`,
+    VALE3: `Vemos cenário mais positivo para produção e custos, com minério de ferro se sustentando acima de USD 100/t. Abordagem amigável ao acionista em dividendos/recompras deve suportar o papel, que proporciona indexação ao portfólio e benefício em cenário de retomada de fluxos para emergentes. Menor exposição ao diesel e frete marítimo que os pares.`,
+    BBDC4: `Banco deverá continuar com a melhora de rentabilidade, principal indutor dos resultados da ação. Adicionado ao desconto de P/L 2026E de 21% em relação ao principal concorrente. As tendências que impulsionaram a revisão positiva de lucros permanecem vigentes. Esperamos dividend yield atrativo de 7,9% para 2026.`,
+    PETR4: `Proporciona indexação ao Ibovespa e resultados robustos no curto/médio prazo, beneficiada pelas tensões geopolíticas que sustentam o petróleo em patamar elevado. Em caso de queda brusca do Brent, possui espaço no plano de capex para preservar dividendos. Exposição ao mercado de diesel e valuation atrativo vs pares internacionais.`,
+    MULT3: `Portfólio de shoppings de maior qualidade do setor, garantindo maior resiliência em ambientes inflacionários e crescimento acima dos pares. Aproxima-se do fim de um ciclo relevante de investimentos, melhorando geração de caixa. Principal beneficiário da reforma tributária dado o nível de exposição a PIS/Cofins no regime atual.`,
+    EQTL3: `Excelente histórico de alocação de capital, culminando na aquisição do controle da Sabesp. Ação apresentou performance abaixo do setor e da subsidiária, criando oportunidade de compra. Prévia operacional indica melhora no braço de distribuição de energia. TIR real de 10% a.a., acima da média setorial, com histórico de prêmio em relação ao setor.`,
+    CPLE3: `Convergência entre dividendos atrativos (~7% em 2026), crescimento de EBITDA e desconto de valuation com TIR real de 10,0%. Exposição atrativa à tendência altista nos preços de energia, com conforto no nível de alocação dado o múltiplo descontado.`,
+    MOTV3: `Empresa bem capitalizada após a venda do segmento de aeroportos, com bom poder de fogo para participar do pipeline de leilões de infraestrutura. Portfólio amplo e maduro com desempenho operacional estável. Beneficiada pelo ciclo de corte de juros, dada a dinâmica do setor de transportes.`,
+    DIRR3: `Beneficia-se do forte dinamismo do segmento de baixa renda, escalando a operação com forte execução e acelerando lançamentos. Atualizações no programa MCMV impactam positivamente a Companhia. Cenário atual de inflação de materiais e frete impacta menos a empresa comparativamente às pares do setor.`,
+    RADL3: `Esperamos melhora sequencial de resultados com expansão de vendas em mesmas lojas e crescimento de unidades puxando margens EBITDA e de lucro. Acreditamos que nos próximos períodos o papel poderia sofrer um re-rating para refletir as melhores condições micro para 2027.`,
+};
+
+const MONTHLY_PERF = [
+    { month:'Mai/25', carteira: 4.21, ibov: 1.45 },
+    { month:'Jun/25', carteira: 2.90, ibov: 1.33 },
+    { month:'Jul/25', carteira:-2.89, ibov:-4.17 },
+    { month:'Ago/25', carteira: 8.69, ibov: 6.28 },
+    { month:'Set/25', carteira: 2.61, ibov: 3.40 },
+    { month:'Out/25', carteira: 1.63, ibov: 2.26 },
+    { month:'Nov/25', carteira: 6.55, ibov: 6.37 },
+    { month:'Dez/25', carteira:-2.11, ibov: 1.29 },
+    { month:'Jan/26', carteira:12.19, ibov:12.56 },
+    { month:'Fev/26', carteira: 8.77, ibov: 4.09 },
+    { month:'Mar/26', carteira:-2.83, ibov:-0.70 },
+    { month:'Abr/26', carteira:-0.34, ibov:-0.08 },
+];
+
+// ── SECTOR COLORS & ICONS ───────────────────────────────────────────────────
+
+const SECTOR_COLORS = {
+    'Serviços Financeiros': { bg:'#2D6A9F', text:'#fff', pill:'rgba(52,152,219,0.15)', pillText:'#5DADE2' },
+    'Mineração & Siderurgia':{ bg:'#7D3C98', text:'#fff', pill:'rgba(155,89,182,0.15)', pillText:'#A569BD' },
+    'Óleo e Gás':           { bg:'#1A5276', text:'#fff', pill:'rgba(26,82,118,0.3)',    pillText:'#5DADE2' },
+    'Shopping Center':      { bg:'#D4520A', text:'#fff', pill:'rgba(243,156,18,0.15)',  pillText:'#F39C12' },
+    'Utilidades Básicas':   { bg:'#1E8449', text:'#fff', pill:'rgba(46,204,113,0.12)',  pillText:'#2ECC71' },
+    'Transportes':          { bg:'#117A65', text:'#fff', pill:'rgba(26,188,156,0.15)',  pillText:'#1ABC9C' },
+    'Construtoras':         { bg:'#935116', text:'#fff', pill:'rgba(243,156,18,0.12)',  pillText:'#CA8A04' },
+    'Consumo Básico':       { bg:'#7B241C', text:'#fff', pill:'rgba(231,76,60,0.15)',   pillText:'#E74C3C' },
+};
+
+const TICKER_ICONS = {
+    ITSA4:'IT', VALE3:'VA', BBDC4:'BB', PETR4:'PB',
+    MULT3:'MU', EQTL3:'EQ', CPLE3:'CP', MOTV3:'MO',
+    DIRR3:'DR', RADL3:'RD'
+};
+
+// ── SECTOR AGGREGATION ──────────────────────────────────────────────────────
+
+function getSectorData() {
+    const agg = {};
+    PORTFOLIO.forEach(p => {
+        agg[p.sector] = (agg[p.sector] || 0) + p.curr;
+    });
+    return Object.entries(agg)
+        .sort((a, b) => b[1] - a[1])
+        .map(([sector, pct]) => ({ sector, pct }));
+}
+
+// ── RENDER: COMPOSITION TABLE ───────────────────────────────────────────────
+
+function renderTable() {
+    const tbody = document.getElementById('compBody');
+    tbody.innerHTML = PORTFOLIO.map(p => {
+        const sc = SECTOR_COLORS[p.sector] || { bg:'#444', text:'#fff', pill:'rgba(200,200,200,0.1)', pillText:'#aaa' };
+        const icon = TICKER_ICONS[p.ticker] || p.ticker.substring(0,2);
+        const deltaMap = { new:'NOVA', same:'—', up:'↑', down:'↓' };
+        const deltaClass = { new:'delta-new', same:'delta-same', up:'delta-up', down:'delta-down' };
+
+        return `
+        <tr>
+            <td>
+                <div class="ticker-cell">
+                    <div class="ticker-icon" style="background:${sc.bg};color:${sc.text}">${icon}</div>
+                    <div>
+                        <div class="ticker-name">${p.ticker}</div>
+                        <div class="ticker-company">${p.company}</div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="sector-pill" style="background:${sc.pill};color:${sc.pillText}">${p.sector}</span>
+            </td>
+            <td class="right"><span class="price-val">R$ ${p.price.toFixed(2).replace('.',',')}</span></td>
+            <td class="right"><span class="pl-val">${p.pl.toFixed(1)}×</span></td>
+            <td class="right" style="color:var(--text-muted)">${p.prev > 0 ? p.prev + '%' : '—'}</td>
+            <td>
+                <div class="weight-bar-wrap">
+                    <div class="weight-bar">
+                        <div class="weight-bar-fill" style="width:${(p.curr/16)*100}%"></div>
+                    </div>
+                    <span class="weight-pct">${p.curr}%</span>
+                </div>
+            </td>
+            <td class="center">
+                <span class="delta-badge ${deltaClass[p.status]}">${deltaMap[p.status]}</span>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ── RENDER: THESIS ──────────────────────────────────────────────────────────
+
+function renderThesis() {
+    const grid = document.getElementById('thesisGrid');
+    grid.innerHTML = PORTFOLIO.map(p => {
+        const sc = SECTOR_COLORS[p.sector] || { bg:'#444', text:'#fff' };
+        const icon = TICKER_ICONS[p.ticker] || p.ticker.substring(0,2);
+        const text = THESIS[p.ticker] || '';
+        return `
+        <div class="thesis-item" id="th-${p.ticker}">
+            <div class="thesis-header" onclick="toggleThesis('${p.ticker}')">
+                <div class="thesis-header-left">
+                    <div class="thesis-icon" style="background:${sc.bg};color:${sc.text}">${icon}</div>
+                    <div>
+                        <div class="thesis-ticker">${p.ticker}</div>
+                        <div class="thesis-company">${p.company}</div>
+                    </div>
+                </div>
+                <span class="thesis-toggle">▼</span>
+            </div>
+            <div class="thesis-body" id="tb-${p.ticker}">
+                <p>${text}</p>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleThesis(ticker) {
+    const item = document.getElementById('th-' + ticker);
+    const body = document.getElementById('tb-' + ticker);
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+    body.classList.toggle('show', !isOpen);
+}
+
+// ── RENDER: SECTOR LEGEND ───────────────────────────────────────────────────
+
+function renderSectorLegend(sectorData) {
+    const chartColors = ['#3498DB','#9B59B6','#1A5276','#E67E22','#27AE60','#1ABC9C','#F39C12','#E74C3C'];
+    const legend = document.getElementById('sectorLegend');
+    legend.innerHTML = sectorData.map((s, i) => `
+        <div class="legend-row">
+            <div class="legend-dot" style="background:${chartColors[i % chartColors.length]}"></div>
+            <span class="legend-label">${s.sector}</span>
+            <span class="legend-pct">${s.pct}%</span>
+        </div>
+    `).join('');
+}
+
+// ── CHARTS ──────────────────────────────────────────────────────────────────
+
+Chart.defaults.color = '#8A97B0';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+function buildPerfChart() {
+    const ctx = document.getElementById('chartPerf').getContext('2d');
+    const labels = MONTHLY_PERF.map(d => d.month);
+    const cart   = MONTHLY_PERF.map(d => d.carteira);
+    const ibov   = MONTHLY_PERF.map(d => d.ibov);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Carteira TOP 10',
+                    data: cart,
+                    backgroundColor: cart.map(v => v >= 0 ? 'rgba(201,168,76,0.75)' : 'rgba(201,168,76,0.35)'),
+                    borderColor:     cart.map(v => v >= 0 ? '#C9A84C' : '#8B6914'),
+                    borderWidth: 1,
+                    borderRadius: 3,
+                },
+                {
+                    label: 'Ibovespa',
+                    data: ibov,
+                    backgroundColor: ibov.map(v => v >= 0 ? 'rgba(52,152,219,0.45)' : 'rgba(52,152,219,0.2)'),
+                    borderColor:     ibov.map(v => v >= 0 ? '#3498DB' : '#1A5276'),
+                    borderWidth: 1,
+                    borderRadius: 3,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            interaction: { mode:'index', intersect:false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: { usePointStyle:true, pointStyle:'circle', padding:16, font:{ size:11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y > 0 ? '+' : ''}${ctx.parsed.y.toFixed(2).replace('.',',')}%`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display:false },
+                    ticks: { font:{ size:10 } }
+                },
+                y: {
+                    grid: { color:'rgba(255,255,255,0.05)' },
+                    ticks: {
+                        font:{ size:10 },
+                        callback: v => (v > 0 ? '+' : '') + v.toFixed(1) + '%'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function buildSectorChart() {
+    const sectorData = getSectorData();
+    const chartColors = ['#3498DB','#9B59B6','#1A5276','#E67E22','#27AE60','#1ABC9C','#F39C12','#E74C3C'];
+    const ctx = document.getElementById('chartSector').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: sectorData.map(s => s.sector),
+            datasets: [{
+                data: sectorData.map(s => s.pct),
+                backgroundColor: chartColors.slice(0, sectorData.length),
+                borderColor: '#111827',
+                borderWidth: 3,
+                hoverBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            cutout: '62%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.label}: ${ctx.parsed}%`
+                    }
+                }
+            }
+        }
+    });
+
+    renderSectorLegend(sectorData);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+
+renderTable();
+renderThesis();
+buildPerfChart();
+buildSectorChart();
+</script>
+</body>
+</html>

@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hermes Capital · RV Dashboard Hub</title>
+    <style>
+        :root {
+            --gold:       #C9A84C;
+            --gold-light: #E8C96A;
+            --gold-dim:   #8B6914;
+            --dark:       #0A0E1A;
+            --dark-2:     #111827;
+            --dark-3:     #1C2537;
+            --dark-4:     #243044;
+            --text:       #F0F2F5;
+            --text-muted: #8A97B0;
+            --green:      #2ECC71;
+            --orange:     #F39C12;
+            --red:        #E74C3C;
+            --blue:       #3498DB;
+            --purple:     #9B59B6;
+            --teal:       #1ABC9C;
+            --radius:     10px;
+            --transition: 0.2s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            background: var(--dark-2);
+            border-bottom: 1px solid rgba(201,168,76,0.2);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-mark {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 18px;
+            color: var(--dark);
+            letter-spacing: -1px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .logo-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.5px;
+        }
+
+        .logo-sub {
+            font-size: 10px;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .date-badge {
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--dark-3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--dark-4);
+        }
+
+        .version-tag {
+            font-size: 11px;
+            color: var(--gold);
+            background: rgba(201,168,76,0.1);
+            border: 1px solid rgba(201,168,76,0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            background: linear-gradient(135deg, var(--dark-2) 0%, var(--dark-3) 100%);
+            border-bottom: 1px solid rgba(201,168,76,0.15);
+            padding: 40px 32px 36px;
+        }
+
+        .hero-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .hero h1 span { color: var(--gold); }
+
+        .hero p {
+            font-size: 14px;
+            color: var(--text-muted);
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .progress-row {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat-pill {
+            background: var(--dark-4);
+            border: 1px solid rgba(255,255,255,0.07);
+            padding: 10px 18px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .stat-pill-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .stat-pill-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* ── GRID ── */
+        .content {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 40px 32px;
+        }
+
+        .phase-section {
+            margin-bottom: 48px;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .phase-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .phase-badge.p1 { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+        .phase-badge.p2 { background: rgba(52,152,219,0.15); color: var(--blue); border: 1px solid rgba(52,152,219,0.3); }
+        .phase-badge.p3 { background: rgba(155,89,182,0.15); color: var(--purple); border: 1px solid rgba(155,89,182,0.3); }
+        .phase-badge.p4 { background: rgba(26,188,156,0.15); color: var(--teal); border: 1px solid rgba(26,188,156,0.3); }
+
+        .phase-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .phase-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        /* ── MODULE CARD ── */
+        .module-card {
+            background: var(--dark-2);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius);
+            padding: 22px;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: block;
+        }
+
+        .module-card:hover {
+            border-color: rgba(201,168,76,0.35);
+            background: var(--dark-3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .module-card.planned { opacity: 0.6; cursor: default; }
+        .module-card.planned:hover { transform: none; border-color: rgba(255,255,255,0.06); background: var(--dark-2); box-shadow: none; }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .module-card.status-done::before    { background: var(--green); }
+        .module-card.status-active::before  { background: var(--gold); }
+        .module-card.status-planned::before { background: var(--dark-4); }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .status-chip {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .chip-done    { background: rgba(46,204,113,0.15);  color: var(--green);  border: 1px solid rgba(46,204,113,0.3); }
+        .chip-active  { background: rgba(201,168,76,0.15);  color: var(--gold);   border: 1px solid rgba(201,168,76,0.3); }
+        .chip-planned { background: rgba(138,151,176,0.1);  color: var(--text-muted); border: 1px solid rgba(138,151,176,0.2); }
+
+        .card-num {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 10px;
+            color: var(--text-muted);
+            background: var(--dark-4);
+            padding: 2px 8px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .launch-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gold);
+            background: rgba(201,168,76,0.08);
+            border: 1px solid rgba(201,168,76,0.2);
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: all var(--transition);
+        }
+
+        .module-card:hover .launch-btn {
+            background: rgba(201,168,76,0.15);
+            border-color: rgba(201,168,76,0.4);
+        }
+
+        /* ── LEGEND ── */
+        .legend {
+            display: flex;
+            gap: 20px;
+            padding: 20px 32px;
+            background: var(--dark-2);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .topbar { padding: 0 16px; }
+            .hero { padding: 24px 16px; }
+            .content { padding: 24px 16px; }
+            .modules-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 22px; }
+            .phase-desc { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+    <div class="logo">
+        <div class="logo-mark">HC</div>
+        <div class="logo-text">
+            <span class="logo-name">Hermes Capital</span>
+            <span class="logo-sub">Renda Variável · Assessoria</span>
+        </div>
+    </div>
+    <div class="topbar-right">
+        <div class="date-badge" id="currentDate">—</div>
+        <div class="version-tag">v0.1 · Hub</div>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner">
+        <h1>Plataforma de <span>Renda Variável</span></h1>
+        <p>Hub central de ferramentas para assessores de investimento. Cada módulo é desenvolvido e entregue de forma independente — clique para acessar os módulos disponíveis.</p>
+        <div class="progress-row">
+            <div class="stat-pill">
+                <div class="stat-dot" style="background:var(--green)"></div>
+                <span class="stat-pill-label">Concluídos</span>
+                <span class="stat-pill-value" id="countDone">0</span>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-dot" style="background:var(--gold)"></div>
+                <span class="stat-pill-label">Em desenvolvimento</span>
+                <span class="stat-pill-value" id="countActive">0</span>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-dot" style="background:var(--dark-4); border: 1px solid #444"></div>
+                <span class="stat-pill-label">Planejados</span>
+                <span class="stat-pill-value" id="countPlanned">0</span>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-dot" style="background:var(--gold)"></div>
+                <span class="stat-pill-label">Total de módulos</span>
+                <span class="stat-pill-value" id="countTotal">0</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main class="content" id="mainContent"></main>
+
+<!-- LEGEND -->
+<footer class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Módulo disponível</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Em desenvolvimento</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#333;border:1px solid #555"></div>Planejado</div>
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const PHASES = [
+    {
+        id: 'p1',
+        label: 'Fase 1',
+        badge: 'p1',
+        title: 'Core Operacional',
+        desc: 'Ferramentas de uso diário, alto impacto imediato',
+        modules: [
+            {
+                id: 'M01',
+                title: 'Carteiras Recomendadas Safra',
+                desc: 'TOP10, Dividendos, BDRs, TOP PICKS, FIIs — todas as carteiras Safra em um único painel com composição, pesos e histórico.',
+                icon: '📊',
+                iconBg: 'rgba(52,152,219,0.15)',
+                tags: ['TOP10', 'Dividendos', 'BDRs', 'FIIs', 'TOP PICKS'],
+                status: 'done',
+                file: 'M01_carteiras_safra.html'
+            },
+            {
+                id: 'M02',
+                title: 'Consolidado de Recomendações',
+                desc: 'Painel com todas as recomendações ativas de RV — compra, venda, neutro — com preço-alvo, upside e status.',
+                icon: '🎯',
+                iconBg: 'rgba(46,204,113,0.15)',
+                tags: ['Compra', 'Venda', 'Neutro', 'Preço-Alvo', 'Upside'],
+                status: 'planned',
+                file: 'M02_recomendacoes.html'
+            },
+            {
+                id: 'M03',
+                title: 'Carteira Consolidada dos Clientes',
+                desc: 'Visão consolidada das posições dos clientes em RV: ticker, quantidade, preço médio, P&L, exposição setorial.',
+                icon: '👥',
+                iconBg: 'rgba(155,89,182,0.15)',
+                tags: ['Posições', 'P&L', 'Exposição', 'Setores'],
+                status: 'planned',
+                file: 'M03_carteira_clientes.html'
+            },
+            {
+                id: 'M04',
+                title: 'Acompanhamento de Operações Abertas',
+                desc: 'Tracking em tempo real de operações em aberto: entrada, stop, alvo, risco/retorno, prazo e status.',
+                icon: '📡',
+                iconBg: 'rgba(243,156,18,0.15)',
+                tags: ['Stop', 'Alvo', 'R/R', 'Status'],
+                status: 'planned',
+                file: 'M04_operacoes_abertas.html'
+            }
+        ]
+    },
+    {
+        id: 'p2',
+        label: 'Fase 2',
+        badge: 'p2',
+        title: 'Análise e Performance',
+        desc: 'Rankings, histórico e guia de ativos',
+        modules: [
+            {
+                id: 'M05',
+                title: 'Ranking de Recomendações',
+                desc: 'Score e ranking das recomendações por performance, acurácia histórica, relação risco-retorno e setor.',
+                icon: '🏆',
+                iconBg: 'rgba(201,168,76,0.15)',
+                tags: ['Score', 'Acurácia', 'Performance', 'Ranking'],
+                status: 'planned',
+                file: 'M05_ranking.html'
+            },
+            {
+                id: 'M06',
+                title: 'Histórico de Rentabilidade',
+                desc: 'Curvas de retorno das recomendações e carteiras vs benchmarks (Ibovespa, CDI, SMLL, IDIV).',
+                icon: '📈',
+                iconBg: 'rgba(26,188,156,0.15)',
+                tags: ['Retorno', 'Ibovespa', 'CDI', 'Drawdown', 'Sharpe'],
+                status: 'planned',
+                file: 'M06_historico.html'
+            },
+            {
+                id: 'M07',
+                title: 'Stock Guide Interativo',
+                desc: 'Base de dados de ações com múltiplos fundamentalistas, gráficos, comparativos setoriais e filtros avançados.',
+                icon: '🔍',
+                iconBg: 'rgba(52,152,219,0.15)',
+                tags: ['P/E', 'P/B', 'ROE', 'Dividend Yield', 'EV/EBITDA'],
+                status: 'planned',
+                file: 'M07_stock_guide.html'
+            },
+            {
+                id: 'M08',
+                title: 'Calculadora de ROA da Operação',
+                desc: 'Calcula o ROA (receita/ativos) gerado por operação ou carteira, por assessor e período.',
+                icon: '💹',
+                iconBg: 'rgba(231,76,60,0.15)',
+                tags: ['ROA', 'Comissão', 'Receita', 'NPS'],
+                status: 'planned',
+                file: 'M08_roa.html'
+            }
+        ]
+    },
+    {
+        id: 'p3',
+        label: 'Fase 3',
+        badge: 'p3',
+        title: 'Derivativos e Estruturas',
+        desc: 'Opções, Long-Short e ferramentas quantitativas',
+        modules: [
+            {
+                id: 'M09',
+                title: 'Calculadora Black-Scholes',
+                desc: 'Precificação de opções com Black-Scholes e Binomial. Greeks (Delta, Gamma, Vega, Theta, Rho) em tempo real.',
+                icon: '⚡',
+                iconBg: 'rgba(155,89,182,0.15)',
+                tags: ['Delta', 'Gamma', 'Vega', 'Theta', 'IV', 'Puts/Calls'],
+                status: 'planned',
+                file: 'M09_black_scholes.html'
+            },
+            {
+                id: 'M10',
+                title: 'Trade Idea — Opções',
+                desc: 'Estruturação de operações com opções: trava, spread, straddle, collar. P&L por cenário e vencimento.',
+                icon: '🎲',
+                iconBg: 'rgba(243,156,18,0.15)',
+                tags: ['Trava', 'Spread', 'Straddle', 'Collar', 'P&L'],
+                status: 'planned',
+                file: 'M10_trade_opcoes.html'
+            },
+            {
+                id: 'M11',
+                title: 'Ferramentas Long-Short',
+                desc: 'Calculadora de L/S com correlação, beta, sizing, histórico de spread e sinal de reversão.',
+                icon: '↕️',
+                iconBg: 'rgba(52,152,219,0.15)',
+                tags: ['Spread', 'Beta', 'Correlação', 'Cointegração', 'Sizing'],
+                status: 'planned',
+                file: 'M11_long_short.html'
+            }
+        ]
+    },
+    {
+        id: 'p4',
+        label: 'Fase 4',
+        badge: 'p4',
+        title: 'Automação e Conteúdo',
+        desc: 'Fluxos automáticos e repositório de pesquisa',
+        modules: [
+            {
+                id: 'M12',
+                title: 'Envio de Autorizações de Ordens',
+                desc: 'Geração e envio automático de e-mail de autorização de ordens ao cliente com modelo padronizado.',
+                icon: '📧',
+                iconBg: 'rgba(26,188,156,0.15)',
+                tags: ['E-mail', 'Ordem', 'Autorização', 'Modelo', 'Automação'],
+                status: 'planned',
+                file: 'M12_autorizacoes.html'
+            },
+            {
+                id: 'M13',
+                title: 'Repositório de Research Safra',
+                desc: 'Base consolidada dos materiais de research de RV do Safra: relatórios, updates, setoriais, flash notes.',
+                icon: '📚',
+                iconBg: 'rgba(201,168,76,0.15)',
+                tags: ['Relatórios', 'Flash', 'Setorial', 'Update', 'PDF'],
+                status: 'planned',
+                file: 'M13_research.html'
+            }
+        ]
+    }
+];
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function getStatusInfo(status) {
+    const map = {
+        done:    { chip: 'chip-done',    label: 'Disponível' },
+        active:  { chip: 'chip-active',  label: 'Em Dev' },
+        planned: { chip: 'chip-planned', label: 'Planejado' }
+    };
+    return map[status] || map.planned;
+}
+
+function renderCard(mod) {
+    const si = getStatusInfo(mod.status);
+    const isClickable = mod.status === 'done';
+    const tags = mod.tags.map(t => `<span class="tag">${t}</span>`).join('');
+    const launchBtn = isClickable
+        ? `<div class="launch-btn">Abrir módulo →</div>`
+        : '';
+
+    return `
+        <a href="${isClickable ? mod.file : '#'}"
+           class="module-card status-${mod.status} ${mod.status === 'planned' ? 'planned' : ''}"
+           ${isClickable ? '' : 'onclick="return false"'}>
+            <div class="card-top">
+                <div class="card-icon" style="background:${mod.iconBg}">${mod.icon}</div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                    <span class="status-chip ${si.chip}">${si.label}</span>
+                    <span class="card-num">${mod.id}</span>
+                </div>
+            </div>
+            <div class="card-title">${mod.title}</div>
+            <div class="card-desc">${mod.desc}</div>
+            <div class="card-tags">${tags}</div>
+            ${launchBtn}
+        </a>
+    `;
+}
+
+function renderPhase(phase) {
+    const cards = phase.modules.map(renderCard).join('');
+    return `
+        <section class="phase-section">
+            <div class="phase-header">
+                <span class="phase-badge ${phase.badge}">${phase.label}</span>
+                <span class="phase-title">${phase.title}</span>
+                <span class="phase-desc">${phase.desc}</span>
+            </div>
+            <div class="modules-grid">${cards}</div>
+        </section>
+    `;
+}
+
+function render() {
+    const container = document.getElementById('mainContent');
+    container.innerHTML = PHASES.map(renderPhase).join('');
+
+    // Counts
+    const allMods = PHASES.flatMap(p => p.modules);
+    document.getElementById('countDone').textContent    = allMods.filter(m => m.status === 'done').length;
+    document.getElementById('countActive').textContent  = allMods.filter(m => m.status === 'active').length;
+    document.getElementById('countPlanned').textContent = allMods.filter(m => m.status === 'planned').length;
+    document.getElementById('countTotal').textContent   = allMods.length;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'
+});
+
+render();
+</script>
+</body>
+</html>
