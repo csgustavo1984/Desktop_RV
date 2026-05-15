@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recomendações em Aberto · Safra · Maio 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --gold:        #C9A84C;
+            --gold-light:  #E8C96A;
+            --gold-dim:    #8B6914;
+            --dark:        #0A0E1A;
+            --dark-2:      #111827;
+            --dark-3:      #1C2537;
+            --dark-4:      #243044;
+            --dark-5:      #2D3B55;
+            --text:        #F0F2F5;
+            --text-muted:  #8A97B0;
+            --text-dim:    #5A6880;
+            --green:       #2ECC71;
+            --green-dim:   rgba(46,204,113,0.12);
+            --red:         #E74C3C;
+            --red-dim:     rgba(231,76,60,0.12);
+            --blue:        #3498DB;
+            --blue-dim:    rgba(52,152,219,0.12);
+            --orange:      #F39C12;
+            --purple:      #9B59B6;
+            --teal:        #1ABC9C;
+            --radius:      10px;
+            --radius-sm:   6px;
+            --gap:         16px;
+            --tr:          0.18s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ── TOP NAV ── */
+        .topnav {
+            background: var(--dark-2);
+            border-bottom: 1px solid rgba(201,168,76,0.18);
+            padding: 0 28px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        .topnav-left { display: flex; align-items: center; gap: 16px; }
+        .back-btn {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; color: var(--text-muted);
+            text-decoration: none; padding: 5px 10px;
+            border-radius: var(--radius-sm); border: 1px solid var(--dark-5);
+            transition: all var(--tr);
+        }
+        .back-btn:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); }
+        .breadcrumb { font-size: 13px; color: var(--text-muted); }
+        .breadcrumb span { color: var(--text); font-weight: 600; }
+        .topnav-right { display: flex; align-items: center; gap: 10px; }
+        .month-badge {
+            background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.35);
+            color: var(--gold); font-size: 11px; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase;
+            padding: 4px 12px; border-radius: 20px;
+        }
+        .mod-tag {
+            font-size: 10px; color: var(--text-dim); background: var(--dark-4);
+            padding: 3px 8px; border-radius: 4px; border: 1px solid var(--dark-5);
+        }
+        .live-dot {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 11px; color: var(--green);
+        }
+        .live-dot::before {
+            content: ''; width: 7px; height: 7px; border-radius: 50%;
+            background: var(--green); animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ── HERO ── */
+        .hero {
+            background: linear-gradient(135deg, var(--dark-2) 0%, var(--dark-3) 60%, #1a2035 100%);
+            border-bottom: 1px solid rgba(201,168,76,0.12);
+            padding: 28px 28px 24px;
+        }
+        .hero-inner { max-width: 1360px; margin: 0 auto; }
+        .hero-top {
+            display: flex; align-items: flex-start;
+            justify-content: space-between; gap: 24px; margin-bottom: 24px;
+        }
+        .hero-title-block h1 { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.2; }
+        .hero-title-block h1 em { font-style: normal; color: var(--gold); }
+        .hero-title-block p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .hero-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+        .analyst-chip {
+            font-size: 11px; color: var(--text-muted); background: var(--dark-4);
+            border: 1px solid var(--dark-5); padding: 3px 10px; border-radius: 20px;
+        }
+
+        /* ── KPI ROW ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--gap);
+        }
+        .kpi-card {
+            background: var(--dark-3); border: 1px solid var(--dark-5);
+            border-radius: var(--radius); padding: 16px 18px;
+            position: relative; overflow: hidden;
+        }
+        .kpi-card::after {
+            content: ''; position: absolute;
+            bottom: 0; left: 0; right: 0; height: 2px;
+        }
+        .kpi-card.pos::after { background: var(--green); }
+        .kpi-card.neg::after { background: var(--red); }
+        .kpi-card.neu::after { background: var(--gold); }
+        .kpi-card.blue::after { background: var(--blue); }
+        .kpi-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px;
+        }
+        .kpi-value { font-size: 26px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+        .kpi-value.pos { color: var(--green); }
+        .kpi-value.neg { color: var(--red); }
+        .kpi-value.neu { color: var(--gold); }
+        .kpi-value.blue { color: var(--blue); }
+        .kpi-value.white { color: var(--text); }
+        .kpi-vs { font-size: 11px; color: var(--text-dim); }
+        .kpi-vs b { color: var(--text-muted); }
+
+        /* ── LAYOUT ── */
+        .page { max-width: 1360px; margin: 0 auto; padding: 24px 28px 48px; }
+        .row { display: grid; gap: var(--gap); margin-bottom: var(--gap); }
+        .row-3-1 { grid-template-columns: 3fr 1fr; }
+        .row-2-1 { grid-template-columns: 2fr 1fr; }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--dark-2); border: 1px solid var(--dark-4);
+            border-radius: var(--radius); padding: 20px 22px;
+        }
+        .card-title {
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .card-title-left { display: flex; align-items: center; gap: 10px; }
+        .card-count {
+            font-size: 11px; font-weight: 700; padding: 2px 8px;
+            border-radius: 20px; background: var(--dark-4);
+            color: var(--text-muted); border: 1px solid var(--dark-5);
+        }
+        .card-note {
+            font-size: 10px; font-weight: 400; text-transform: none;
+            letter-spacing: 0; color: var(--text-dim);
+        }
+
+        /* ── MAIN TABLE ── */
+        .rec-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .rec-table thead th {
+            text-align: left; padding: 8px 10px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-dim);
+            border-bottom: 1px solid var(--dark-4); white-space: nowrap;
+        }
+        .rec-table thead th.right { text-align: right; }
+        .rec-table thead th.center { text-align: center; }
+        .rec-table tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background var(--tr);
+        }
+        .rec-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+        .rec-table tbody tr:last-child { border-bottom: none; }
+        .rec-table tbody tr.entrada-row {
+            background: rgba(201,168,76,0.04);
+        }
+        .rec-table tbody tr.entrada-row:hover { background: rgba(201,168,76,0.08); }
+        .rec-table tbody td { padding: 11px 10px; vertical-align: middle; }
+        .rec-table tbody td.right { text-align: right; }
+        .rec-table tbody td.center { text-align: center; }
+
+        /* ── TICKER CELL ── */
+        .ticker-cell { display: flex; align-items: center; gap: 10px; }
+        .ticker-icon {
+            width: 34px; height: 34px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 800; letter-spacing: -0.5px; flex-shrink: 0;
+        }
+        .ticker-name { font-weight: 700; color: var(--text); font-size: 13px; }
+        .ticker-company { font-size: 11px; color: var(--text-muted); }
+
+        /* ── CALL BADGE ── */
+        .call-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px; font-weight: 700; padding: 3px 10px;
+            border-radius: 5px; white-space: nowrap;
+        }
+        .call-compra { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+        .call-venda  { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(231,76,60,0.3); }
+        .call-ls     { background: var(--blue-dim);  color: var(--blue);  border: 1px solid rgba(52,152,219,0.3); }
+
+        /* ── STATUS BADGE ── */
+        .entrada-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 10px; font-weight: 700; padding: 2px 8px;
+            border-radius: 4px; white-space: nowrap;
+            background: rgba(201,168,76,0.12); color: var(--gold);
+            border: 1px solid rgba(201,168,76,0.35);
+        }
+
+        /* ── VALUES ── */
+        .val-pos { font-weight: 700; color: var(--green); }
+        .val-neg { font-weight: 700; color: var(--red); }
+        .val-neu { font-weight: 600; color: var(--text); }
+        .val-dim { font-size: 12px; color: var(--text-dim); }
+
+        /* ── GRAFICO PILL ── */
+        .grafico-pill {
+            font-size: 10px; padding: 2px 7px; border-radius: 4px;
+            background: var(--dark-4); color: var(--text-muted);
+            border: 1px solid var(--dark-5); white-space: nowrap;
+        }
+
+        /* ── RR BAR ── */
+        .rr-wrap { display: flex; align-items: center; gap: 6px; }
+        .rr-val { font-size: 12px; font-weight: 700; color: var(--text); min-width: 30px; }
+        .rr-bar {
+            flex: 1; height: 4px; background: var(--dark-4);
+            border-radius: 2px; overflow: hidden; min-width: 40px;
+        }
+        .rr-fill { height: 100%; border-radius: 2px; background: var(--gold); }
+
+        /* ── CHART ── */
+        .chart-wrap { position: relative; height: 200px; }
+
+        /* ── HISTORICO TABLE ── */
+        .hist-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .hist-table thead th {
+            text-align: left; padding: 7px 10px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-dim);
+            border-bottom: 1px solid var(--dark-4); white-space: nowrap;
+        }
+        .hist-table thead th.right { text-align: right; }
+        .hist-table thead th.center { text-align: center; }
+        .hist-table tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            transition: background var(--tr);
+        }
+        .hist-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .hist-table tbody tr:last-child { border-bottom: none; }
+        .hist-table tbody td { padding: 8px 10px; vertical-align: middle; }
+        .hist-table tbody td.right { text-align: right; }
+        .hist-table tbody td.center { text-align: center; }
+
+        /* ── HIST TOGGLE ── */
+        .hist-toggle-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            background: var(--dark-3); border: 1px solid var(--dark-5);
+            padding: 5px 14px; border-radius: var(--radius-sm);
+            cursor: pointer; transition: all var(--tr); margin-top: 12px;
+        }
+        .hist-toggle-btn:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); }
+        .hist-body { overflow: hidden; }
+
+        /* ── SECTOR TAGS ── */
+        .sector-pill {
+            font-size: 10px; padding: 2px 7px; border-radius: 4px;
+            font-weight: 500; white-space: nowrap;
+        }
+
+        /* ── STATS MINI ── */
+        .stats-row { display: flex; flex-direction: column; gap: 10px; }
+        .stat-mini {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; background: var(--dark-3);
+            border-radius: var(--radius-sm); border: 1px solid var(--dark-4);
+        }
+        .stat-mini-label { font-size: 11px; color: var(--text-muted); }
+        .stat-mini-val { font-size: 13px; font-weight: 700; }
+
+        /* ── ENCERRADAS CARD ── */
+        .enc-row {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .enc-item {
+            background: var(--dark-3); border-radius: var(--radius-sm);
+            border: 1px solid var(--dark-4); padding: 12px 14px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .enc-item.enc-pos { border-left: 3px solid var(--green); }
+        .enc-item.enc-neg { border-left: 3px solid var(--red); }
+        .enc-ticker { font-size: 13px; font-weight: 800; color: var(--text); min-width: 80px; }
+        .enc-meta { flex: 1; }
+        .enc-meta-top { font-size: 11px; color: var(--text-muted); }
+        .enc-meta-dates { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+        .enc-retorno { font-size: 15px; font-weight: 800; }
+
+        /* ── FOOTER ── */
+        .page-footer {
+            margin-top: 32px; padding-top: 16px;
+            border-top: 1px solid var(--dark-4);
+            font-size: 10px; color: var(--text-dim); line-height: 1.6;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1100px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 860px) {
+            .row-3-1, .row-2-1 { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero-top { flex-direction: column; }
+        }
+        @media (max-width: 600px) {
+            .topnav { padding: 0 14px; }
+            .hero { padding: 20px 14px; }
+            .page { padding: 16px 14px 32px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+    <div class="topnav-left">
+        <a href="index.html" class="back-btn">← Hub</a>
+        <div class="breadcrumb">Recomendações Safra · <span>Em Aberto</span></div>
+    </div>
+    <div class="topnav-right">
+        <span class="live-dot">Ao vivo</span>
+        <span class="month-badge">Maio 2026</span>
+        <span class="mod-tag">M02</span>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-top">
+            <div class="hero-title-block">
+                <h1>Recomendações em <em>Aberto</em></h1>
+                <p>Equity Research · Safra Corretora · Atualizado em 15/05/2026</p>
+                <div class="hero-meta">
+                    <span class="analyst-chip">Luana Nunes · Estrategista</span>
+                    <span class="analyst-chip">Cauê Pinheiro · Estrategista</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI ROW -->
+        <div class="kpi-grid">
+            <div class="kpi-card neu">
+                <div class="kpi-label">Em Aberto</div>
+                <div class="kpi-value white">12</div>
+                <div class="kpi-vs">operações ativas</div>
+            </div>
+            <div class="kpi-card pos">
+                <div class="kpi-label">Compra</div>
+                <div class="kpi-value pos">5</div>
+                <div class="kpi-vs"><b>Long</b> · direcional</div>
+            </div>
+            <div class="kpi-card neg">
+                <div class="kpi-label">Venda</div>
+                <div class="kpi-value neg">4</div>
+                <div class="kpi-vs"><b>Short</b> · direcional</div>
+            </div>
+            <div class="kpi-card blue">
+                <div class="kpi-label">Long &amp; Short</div>
+                <div class="kpi-value blue">3</div>
+                <div class="kpi-vs"><b>Spread</b> · relativo</div>
+            </div>
+            <div class="kpi-card neu">
+                <div class="kpi-label">Valendo Entrada</div>
+                <div class="kpi-value neu">7</div>
+                <div class="kpi-vs">entrada ainda válida</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main class="page">
+
+    <!-- ROW 1: TABELA PRINCIPAL -->
+    <div class="row" style="margin-bottom:var(--gap)">
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-left">
+                    Recomendações em Aberto
+                    <span class="card-count">12</span>
+                </div>
+                <span class="card-note">⭐ Valendo Entrada = entrada ainda válida conforme o relatório</span>
+            </div>
+            <div style="overflow-x:auto">
+                <table class="rec-table">
+                    <thead>
+                        <tr>
+                            <th>Ativo</th>
+                            <th class="center">Call</th>
+                            <th class="right">Entrada</th>
+                            <th class="right">Objetivo</th>
+                            <th class="right">Ganho Pot.</th>
+                            <th class="right">Stop</th>
+                            <th class="right">Perda Pot.</th>
+                            <th class="right">R/R</th>
+                            <th class="center">Gráfico</th>
+                            <th>Início</th>
+                            <th class="center">Dias</th>
+                            <th class="center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROW 2: ENCERRADAS + DISTRIBUIÇÃO -->
+    <div class="row row-2-1">
+
+        <!-- ENCERRADAS NO PREGÃO ANTERIOR -->
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-left">
+                    Encerradas no Pregão Anterior
+                    <span class="card-count">2</span>
+                </div>
+                <span class="card-note">14/05/2026</span>
+            </div>
+            <div class="enc-row" id="encRow"></div>
+        </div>
+
+        <!-- DISTRIBUIÇÃO -->
+        <div class="card">
+            <div class="card-title">Distribuição</div>
+            <div class="chart-wrap">
+                <canvas id="distChart"></canvas>
+            </div>
+            <div class="stats-row" style="margin-top:14px" id="statsRow"></div>
+        </div>
+    </div>
+
+    <!-- ROW 3: HISTÓRICO -->
+    <div class="row">
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-left">
+                    Histórico de Operações
+                    <span class="card-count">41</span>
+                </div>
+                <span class="card-note">últimos ~45 dias</span>
+            </div>
+
+            <!-- Resumo do histórico -->
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+                <div style="background:var(--green-dim);border:1px solid rgba(46,204,113,0.25);border-radius:6px;padding:10px 16px;flex:1;min-width:120px">
+                    <div style="font-size:10px;color:var(--green);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Positivas</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--green)" id="histPos">—</div>
+                    <div style="font-size:11px;color:var(--text-dim)" id="histPosPct">—</div>
+                </div>
+                <div style="background:var(--red-dim);border:1px solid rgba(231,76,60,0.25);border-radius:6px;padding:10px 16px;flex:1;min-width:120px">
+                    <div style="font-size:10px;color:var(--red);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Negativas</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--red)" id="histNeg">—</div>
+                    <div style="font-size:11px;color:var(--text-dim)" id="histNegPct">—</div>
+                </div>
+                <div style="background:var(--dark-3);border:1px solid var(--dark-5);border-radius:6px;padding:10px 16px;flex:1;min-width:120px">
+                    <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Retorno Médio</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--text)" id="histAvg">—</div>
+                    <div style="font-size:11px;color:var(--text-dim)">por operação</div>
+                </div>
+                <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:6px;padding:10px 16px;flex:1;min-width:120px">
+                    <div style="font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">% Acerto</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--gold)" id="histAcerto">—</div>
+                    <div style="font-size:11px;color:var(--text-dim)">operações encerradas</div>
+                </div>
+            </div>
+
+            <div class="hist-body" id="histBody" style="display:none">
+                <div style="overflow-x:auto">
+                    <table class="hist-table">
+                        <thead>
+                            <tr>
+                                <th>Ativo</th>
+                                <th class="center">Call</th>
+                                <th>Início</th>
+                                <th>Encerramento</th>
+                                <th class="right">Entrada</th>
+                                <th class="right">Saída</th>
+                                <th class="right">Retorno</th>
+                                <th class="center">Gráfico</th>
+                            </tr>
+                        </thead>
+                        <tbody id="histTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <button class="hist-toggle-btn" id="histToggle" onclick="toggleHist()">
+                ▼ Ver histórico completo (41 operações)
+            </button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="page-footer">
+        <strong>Aviso:</strong> Este material é preparado pela Safra Corretora e tem caráter meramente informativo. Não constitui oferta de compra ou venda de valores mobiliários.
+        Recomendamos os papéis apenas para clientes com perfil Agressivo. Desempenho passado não garante resultados futuros.
+        Analistas responsáveis: Luana Nunes e Cauê Pinheiro.
+    </div>
+
+</main>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+
+const RECS = [
+    { ativo:'HYPE3',     empresa:'Hypera Pharma',        setor:'Saúde',       call:'Venda',  entrada:22.66, objetivo:21.40, ganho: 5.56, stop:23.90, perda:-5.47, grafico:'Diário',     inicio:'24/04/26', ls:false, entrada_ok:false },
+    { ativo:'VALE3',     empresa:'Vale S.A.',             setor:'Mineração',   call:'Compra', entrada:82.84, objetivo:89.67, ganho: 8.24, stop:79.50, perda:-4.03, grafico:'Diário',     inicio:'12/05/26', ls:false, entrada_ok:true  },
+    { ativo:'INBR32',    empresa:'Inter & Co',            setor:'Financeiro',  call:'Compra', entrada:31.08, objetivo:33.50, ganho: 7.79, stop:28.81, perda:-7.30, grafico:'Diário',     inicio:'12/05/26', ls:false, entrada_ok:false },
+    { ativo:'ITUB4',     empresa:'Itaú Unibanco',         setor:'Financeiro',  call:'Compra', entrada:40.20, objetivo:41.45, ganho: 3.11, stop:39.00, perda:-2.99, grafico:'Diário',     inicio:'13/05/26', ls:false, entrada_ok:true  },
+    { ativo:'ASAI3',     empresa:'Assaí Atacadista',      setor:'Varejo',      call:'Venda',  entrada: 8.58, objetivo: 8.10, ganho: 5.59, stop: 8.99, perda:-4.78, grafico:'Diário',     inicio:'14/05/26', ls:false, entrada_ok:true  },
+    { ativo:'RECV3',     empresa:'PetroRecôncavo',        setor:'Petróleo',    call:'Venda',  entrada:12.13, objetivo:11.65, ganho: 3.96, stop:12.50, perda:-3.05, grafico:'Diário',     inicio:'14/05/26', ls:false, entrada_ok:true  },
+    { ativo:'AMZO34',    empresa:'Amazon (BDR)',           setor:'Tecnologia',  call:'Compra', entrada:66.10, objetivo:68.55, ganho: 3.71, stop:63.66, perda:-3.69, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:false },
+    { ativo:'GGBR4',     empresa:'Gerdau',                setor:'Siderurgia',  call:'Compra', entrada:23.79, objetivo:25.05, ganho: 5.30, stop:22.55, perda:-5.21, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:true  },
+    { ativo:'SANB11',    empresa:'Santander Brasil',      setor:'Financeiro',  call:'Venda',  entrada:28.15, objetivo:26.64, ganho: 5.36, stop:29.50, perda:-4.80, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:false },
+    { ativo:'POMO4/R',   empresa:'Marcopolo / Romi',      setor:'L&S',         call:'L&S',    entrada:1.1916, objetivo:1.3242, ganho:11.13, stop:1.0956, perda:-8.06, grafico:'Trade Idea', inicio:'25/03/26', ls:true,  entrada_ok:false },
+    { ativo:'SUZB3/KL',  empresa:'Suzano / Klabin',       setor:'L&S',         call:'L&S',    entrada:2.4839, objetivo:2.6690, ganho: 7.45, stop:2.3565, perda:-5.13, grafico:'Trade Idea', inicio:'15/04/26', ls:true,  entrada_ok:true  },
+    { ativo:'EQTL3/EN',  empresa:'Equatorial / EnBr',     setor:'L&S',         call:'L&S',    entrada:0.8032, objetivo:0.8406, ganho: 4.66, stop:0.7787, perda:-3.05, grafico:'Trade Idea', inicio:'13/05/26', ls:true,  entrada_ok:true  },
+];
+
+const ENCERRADAS = [
+    { ativo:'SLCE3',       empresa:'SLC Agrícola',    call:'Compra', inicio:'13/05/26', enc:'14/05/26', entrada:17.88, saida:17.12, retorno:-4.25, grafico:'Diário'    },
+    { ativo:'VALE3/USIM5', empresa:'Vale / Usiminas', call:'L&S',    inicio:'11/05/26', enc:'14/05/26', entrada: 9.17, saida: 8.64, retorno:-5.72, grafico:'Top Picks' },
+];
+
+const HISTORICO = [
+    { ativo:'GOGL34',       call:'Compra', inicio:'15/04/26', enc:'27/04/26', entrada:138.10, saida:146.48, retorno: 5.79, grafico:'Trade Idea' },
+    { ativo:'MDNE3',        call:'Venda',  inicio:'27/04/26', enc:'28/04/26', entrada: 30.86, saida: 28.93, retorno: 6.25, grafico:'Trade Idea' },
+    { ativo:'VIVT3',        call:'Compra', inicio:'24/02/26', enc:'28/04/26', entrada: 41.95, saida: 38.80, retorno:-7.22, grafico:'Trade Idea' },
+    { ativo:'CSMG3',        call:'Compra', inicio:'13/04/26', enc:'27/04/26', entrada: 58.03, saida: 56.08, retorno:-3.50, grafico:'Top Picks'  },
+    { ativo:'ALPA4',        call:'Compra', inicio:'17/04/26', enc:'28/04/26', entrada: 12.85, saida: 11.96, retorno:-6.93, grafico:'Diário'     },
+    { ativo:'SMTO3',        call:'Venda',  inicio:'27/04/26', enc:'28/04/26', entrada: 16.77, saida: 15.80, retorno: 5.78, grafico:'Top 5'      },
+    { ativo:'WEGE3',        call:'Venda',  inicio:'22/04/26', enc:'29/04/26', entrada: 48.94, saida: 45.65, retorno: 6.72, grafico:'Top 5'      },
+    { ativo:'CMIG4',        call:'Venda',  inicio:'27/04/26', enc:'29/04/26', entrada: 13.05, saida: 12.16, retorno: 6.82, grafico:'Diário'     },
+    { ativo:'AXIA3',        call:'Compra', inicio:'20/04/26', enc:'29/04/26', entrada: 64.14, saida: 60.98, retorno:-4.93, grafico:'Top 5'      },
+    { ativo:'M1TA34',       call:'Compra', inicio:'15/04/26', enc:'30/04/26', entrada:117.72, saida:110.50, retorno:-6.13, grafico:'Trade Idea' },
+    { ativo:'JSLG3',        call:'Venda',  inicio:'27/04/26', enc:'04/05/26', entrada:  7.35, saida:  6.94, retorno: 5.58, grafico:'Top Picks'  },
+    { ativo:'LREN3',        call:'Venda',  inicio:'27/04/26', enc:'04/05/26', entrada: 14.05, saida: 13.52, retorno: 3.77, grafico:'Top 5'      },
+    { ativo:'GGPS3',        call:'Venda',  inicio:'27/04/26', enc:'04/05/26', entrada: 15.50, saida: 14.72, retorno: 5.03, grafico:'Top 5'      },
+    { ativo:'EMBJ3/WEGE3',  call:'L&S',    inicio:'15/04/26', enc:'04/05/26', entrada:  1.67, saida:  1.82, retorno: 8.64, grafico:'Trade Idea' },
+    { ativo:'EMBJ3',        call:'Venda',  inicio:'23/04/26', enc:'06/05/26', entrada: 79.76, saida: 81.88, retorno:-2.66, grafico:'Diário'     },
+    { ativo:'BEEF3',        call:'Venda',  inicio:'30/03/26', enc:'06/05/26', entrada:  4.12, saida:  4.09, retorno: 0.73, grafico:'Top Picks'  },
+    { ativo:'RDOR3',        call:'Compra', inicio:'28/04/26', enc:'06/05/26', entrada: 38.30, saida: 40.61, retorno: 6.03, grafico:'Diário'     },
+    { ativo:'AXIA3',        call:'Venda',  inicio:'29/04/26', enc:'06/05/26', entrada: 60.88, saida: 62.05, retorno:-1.92, grafico:'Diário'     },
+    { ativo:'BBDC4/ITUB4',  call:'L&S',    inicio:'24/02/26', enc:'06/05/26', entrada:  0.45, saida:  0.46, retorno: 3.60, grafico:'Top Picks'  },
+    { ativo:'ECOR3',        call:'Venda',  inicio:'29/04/26', enc:'06/05/26', entrada:  9.03, saida:  9.42, retorno:-4.32, grafico:'Diário'     },
+    { ativo:'MDNE3',        call:'Compra', inicio:'28/04/26', enc:'07/05/26', entrada: 29.93, saida: 32.03, retorno: 7.02, grafico:'Diário'     },
+    { ativo:'PRIO3',        call:'Compra', inicio:'04/05/26', enc:'07/05/26', entrada: 67.84, saida: 64.15, retorno:-5.44, grafico:'Top 5'      },
+    { ativo:'EMBJ3',        call:'Compra', inicio:'06/05/26', enc:'08/05/26', entrada: 81.88, saida: 78.10, retorno:-4.62, grafico:'Diário'     },
+    { ativo:'BPAC11',       call:'Venda',  inicio:'04/05/26', enc:'08/05/26', entrada: 58.17, saida: 58.72, retorno:-0.95, grafico:'Top 5'      },
+    { ativo:'MRVE3',        call:'Venda',  inicio:'04/05/26', enc:'11/05/26', entrada:  6.95, saida:  6.38, retorno: 8.20, grafico:'Top Picks'  },
+    { ativo:'POMO4',        call:'Compra', inicio:'08/05/26', enc:'11/05/26', entrada:  6.58, saida:  6.16, retorno:-6.38, grafico:'Diário'     },
+    { ativo:'IGTI11',       call:'Venda',  inicio:'04/05/26', enc:'11/05/26', entrada: 27.48, saida: 27.46, retorno: 0.07, grafico:'Top 5'      },
+    { ativo:'BRAP4',        call:'Venda',  inicio:'04/05/26', enc:'11/05/26', entrada: 22.67, saida: 23.01, retorno:-1.50, grafico:'Top 5'      },
+    { ativo:'SLCE3',        call:'Compra', inicio:'04/05/26', enc:'11/05/26', entrada: 17.19, saida: 17.39, retorno: 1.16, grafico:'Top 5'      },
+    { ativo:'LREN3',        call:'Venda',  inicio:'11/05/26', enc:'13/05/26', entrada: 14.22, saida: 13.33, retorno: 6.26, grafico:'Top 5'      },
+    { ativo:'VAMO3',        call:'Venda',  inicio:'07/05/26', enc:'13/05/26', entrada:  3.77, saida:  3.53, retorno: 6.37, grafico:'Diário'     },
+    { ativo:'CYRE3/EZTC3',  call:'L&S',    inicio:'30/04/26', enc:'13/05/26', entrada:  1.67, saida:  1.74, retorno: 3.82, grafico:'Trade Idea' },
+    { ativo:'PSSA3',        call:'Compra', inicio:'08/05/26', enc:'13/05/26', entrada: 51.50, saida: 48.97, retorno:-4.91, grafico:'Diário'     },
+    { ativo:'AXIA3',        call:'Venda',  inicio:'11/05/26', enc:'13/05/26', entrada: 58.65, saida: 55.50, retorno: 5.37, grafico:'Top 5'      },
+    { ativo:'KEPL3',        call:'Venda',  inicio:'11/05/26', enc:'13/05/26', entrada:  7.60, saida:  7.18, retorno: 5.53, grafico:'Top Picks'  },
+    { ativo:'BBAS3',        call:'Venda',  inicio:'29/04/26', enc:'13/05/26', entrada: 22.00, saida: 21.00, retorno: 4.55, grafico:'Diário'     },
+    { ativo:'ALOS3',        call:'Venda',  inicio:'12/05/26', enc:'13/05/26', entrada: 29.79, saida: 28.28, retorno: 5.07, grafico:'Diário'     },
+    { ativo:'SAUD3',        call:'Venda',  inicio:'12/05/26', enc:'13/05/26', entrada: 14.51, saida: 13.80, retorno: 4.89, grafico:'Diário'     },
+    { ativo:'XPBR31',       call:'Venda',  inicio:'12/05/26', enc:'13/05/26', entrada: 91.41, saida: 87.14, retorno: 4.67, grafico:'Diário'     },
+    { ativo:'SLCE3',        call:'Compra', inicio:'13/05/26', enc:'14/05/26', entrada: 17.88, saida: 17.12, retorno:-4.25, grafico:'Diário'     },
+    { ativo:'VALE3/USIM5',  call:'L&S',    inicio:'11/05/26', enc:'14/05/26', entrada:  9.17, saida:  8.64, retorno:-5.72, grafico:'Top Picks'  },
+];
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+
+const SECTOR_COLORS = {
+    'Financeiro': '#3498DB', 'Mineração': '#C9A84C', 'Saúde': '#1ABC9C',
+    'Petróleo': '#E67E22',   'Tecnologia': '#9B59B6', 'Siderurgia': '#95A5A6',
+    'Varejo': '#2ECC71',     'L&S': '#3498DB',
+};
+
+function sectorColor(setor) { return SECTOR_COLORS[setor] || '#8A97B0'; }
+
+function callBadge(call) {
+    if (call === 'Compra') return `<span class="call-badge call-compra">↑ Compra</span>`;
+    if (call === 'Venda')  return `<span class="call-badge call-venda">↓ Venda</span>`;
+    return `<span class="call-badge call-ls">⇅ L&S</span>`;
+}
+
+function calcDias(inicioStr) {
+    const [d, m, y] = inicioStr.split('/');
+    const ini = new Date(`20${y}-${m}-${d}`);
+    const hoje = new Date('2026-05-15');
+    return Math.round((hoje - ini) / 86400000);
+}
+
+function calcRR(ganho, perda) {
+    return (Math.abs(ganho) / Math.abs(perda)).toFixed(2);
+}
+
+function fmtEntrada(rec) {
+    return rec.ls ? rec.entrada.toFixed(4) : rec.entrada.toFixed(2);
+}
+function fmtObjetivo(rec) {
+    return rec.ls ? rec.objetivo.toFixed(4) : rec.objetivo.toFixed(2);
+}
+function fmtStop(rec) {
+    return rec.ls ? rec.stop.toFixed(4) : rec.stop.toFixed(2);
+}
+
+function tickerInitials(ativo) {
+    const base = ativo.split('/')[0];
+    return base.replace(/[0-9]/g, '').substring(0, 3);
+}
+
+// ── RENDER MAIN TABLE ─────────────────────────────────────────────────────────
+
+function renderRecTable() {
+    const tbody = document.getElementById('recTableBody');
+    tbody.innerHTML = RECS.map(r => {
+        const dias = calcDias(r.inicio);
+        const rr = calcRR(r.ganho, r.perda);
+        const rrPct = Math.min(parseFloat(rr) / 3 * 100, 100);
+        const col = sectorColor(r.setor);
+        const entradaClass = r.entrada_ok ? 'entrada-row' : '';
+        const statusCell = r.entrada_ok
+            ? `<span class="entrada-badge">⭐ Entrada</span>`
+            : `<span style="font-size:10px;color:var(--text-dim)">—</span>`;
+
+        return `
+        <tr class="${entradaClass}">
+            <td>
+                <div class="ticker-cell">
+                    <div class="ticker-icon" style="background:${col}22;color:${col};border:1px solid ${col}44">
+                        ${tickerInitials(r.ativo)}
+                    </div>
+                    <div>
+                        <div class="ticker-name">${r.ativo}</div>
+                        <div class="ticker-company">${r.empresa}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="center">${callBadge(r.call)}</td>
+            <td class="right"><span class="val-neu">${fmtEntrada(r)}</span></td>
+            <td class="right"><span class="val-neu">${fmtObjetivo(r)}</span></td>
+            <td class="right"><span class="val-pos">+${r.ganho.toFixed(2)}%</span></td>
+            <td class="right"><span class="val-neu">${fmtStop(r)}</span></td>
+            <td class="right"><span class="val-neg">${r.perda.toFixed(2)}%</span></td>
+            <td class="right">
+                <div class="rr-wrap">
+                    <span class="rr-val">${rr}x</span>
+                    <div class="rr-bar"><div class="rr-fill" style="width:${rrPct}%"></div></div>
+                </div>
+            </td>
+            <td class="center"><span class="grafico-pill">${r.grafico}</span></td>
+            <td><span style="font-size:12px;color:var(--text-muted)">${r.inicio}</span></td>
+            <td class="center"><span style="font-size:12px;font-weight:700;color:${dias > 10 ? 'var(--orange)' : 'var(--text-muted)'}">${dias}d</span></td>
+            <td class="center">${statusCell}</td>
+        </tr>`;
+    }).join('');
+}
+
+// ── RENDER ENCERRADAS ─────────────────────────────────────────────────────────
+
+function renderEncerradas() {
+    const cont = document.getElementById('encRow');
+    cont.innerHTML = ENCERRADAS.map(e => {
+        const pos = e.retorno > 0;
+        return `
+        <div class="enc-item ${pos ? 'enc-pos' : 'enc-neg'}">
+            <div class="ticker-icon" style="background:${pos ? 'var(--green-dim)' : 'var(--red-dim)'};color:${pos ? 'var(--green)' : 'var(--red)'};border:1px solid ${pos ? 'rgba(46,204,113,0.3)' : 'rgba(231,76,60,0.3)'}">
+                ${tickerInitials(e.ativo)}
+            </div>
+            <div class="enc-meta" style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+                    <span style="font-size:13px;font-weight:800;color:var(--text)">${e.ativo}</span>
+                    ${callBadge(e.call)}
+                </div>
+                <div class="enc-meta-dates">${e.inicio} → ${e.enc} · entrada ${e.entrada} · saída ${e.saida} · <span class="grafico-pill">${e.grafico}</span></div>
+            </div>
+            <div class="enc-retorno ${pos ? 'val-pos' : 'val-neg'}">${pos ? '+' : ''}${e.retorno.toFixed(2)}%</div>
+        </div>`;
+    }).join('');
+}
+
+// ── RENDER DISTRIBUIÇÃO ───────────────────────────────────────────────────────
+
+function renderDist() {
+    const compra = RECS.filter(r => r.call === 'Compra').length;
+    const venda  = RECS.filter(r => r.call === 'Venda').length;
+    const ls     = RECS.filter(r => r.call === 'L&S').length;
+
+    const ctx = document.getElementById('distChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Compra', 'Venda', 'L&S'],
+            datasets: [{
+                data: [compra, venda, ls],
+                backgroundColor: ['rgba(46,204,113,0.8)', 'rgba(231,76,60,0.8)', 'rgba(52,152,219,0.8)'],
+                borderColor: ['#2ECC71', '#E74C3C', '#3498DB'],
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#8A97B0', font: { size: 11 }, padding: 14 } },
+                tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} operações` } }
+            }
+        }
+    });
+
+    document.getElementById('statsRow').innerHTML = `
+        <div class="stat-mini">
+            <span class="stat-mini-label">Valendo Entrada</span>
+            <span class="stat-mini-val" style="color:var(--gold)">${RECS.filter(r=>r.entrada_ok).length} de 12</span>
+        </div>
+        <div class="stat-mini">
+            <span class="stat-mini-label">Maior R/R</span>
+            <span class="stat-mini-val" style="color:var(--green)">${Math.max(...RECS.map(r=>parseFloat(calcRR(r.ganho,r.perda)))).toFixed(2)}x</span>
+        </div>
+        <div class="stat-mini">
+            <span class="stat-mini-label">Mais antigo em aberto</span>
+            <span class="stat-mini-val" style="color:var(--orange)">${Math.max(...RECS.map(r=>calcDias(r.inicio)))}d</span>
+        </div>
+    `;
+}
+
+// ── RENDER HISTÓRICO ──────────────────────────────────────────────────────────
+
+function renderHistorico() {
+    const pos   = HISTORICO.filter(h => h.retorno > 0);
+    const neg   = HISTORICO.filter(h => h.retorno <= 0);
+    const avg   = HISTORICO.reduce((a, h) => a + h.retorno, 0) / HISTORICO.length;
+    const acerto = (pos.length / HISTORICO.length * 100).toFixed(1);
+
+    document.getElementById('histPos').textContent    = pos.length;
+    document.getElementById('histPosPct').textContent = `${(pos.length/HISTORICO.length*100).toFixed(0)}% do total`;
+    document.getElementById('histNeg').textContent    = neg.length;
+    document.getElementById('histNegPct').textContent = `${(neg.length/HISTORICO.length*100).toFixed(0)}% do total`;
+    document.getElementById('histAvg').textContent    = `${avg >= 0 ? '+' : ''}${avg.toFixed(2)}%`;
+    document.getElementById('histAcerto').textContent = `${acerto}%`;
+
+    const tbody = document.getElementById('histTableBody');
+    tbody.innerHTML = HISTORICO.map(h => {
+        const pos = h.retorno > 0;
+        return `
+        <tr>
+            <td><span style="font-weight:700;color:var(--text)">${h.ativo}</span></td>
+            <td class="center">${callBadge(h.call)}</td>
+            <td><span style="font-size:11px;color:var(--text-muted)">${h.inicio}</span></td>
+            <td><span style="font-size:11px;color:var(--text-muted)">${h.enc}</span></td>
+            <td class="right"><span style="color:var(--text-dim)">${h.entrada}</span></td>
+            <td class="right"><span style="color:var(--text-dim)">${h.saida}</span></td>
+            <td class="right"><span class="${pos ? 'val-pos' : 'val-neg'}">${pos ? '+' : ''}${h.retorno.toFixed(2)}%</span></td>
+            <td class="center"><span class="grafico-pill">${h.grafico}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+function toggleHist() {
+    const body = document.getElementById('histBody');
+    const btn  = document.getElementById('histToggle');
+    const open = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    btn.textContent = open
+        ? '▼ Ver histórico completo (41 operações)'
+        : '▲ Fechar histórico';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+
+renderRecTable();
+renderEncerradas();
+renderDist();
+renderHistorico();
+</script>
+</body>
+</html>
