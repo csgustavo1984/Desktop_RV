@@ -465,7 +465,8 @@
                     <th class="right">Preço-alvo*</th>
                     <th class="right">Upside</th>
                     <th class="right">P/L 2026E</th>
-                    <th>Peso</th>
+                    <th class="right">Peso Anterior</th>
+                    <th>Peso Atual</th>
                     <th class="center">Status</th>
                 </tr>
             </thead>
@@ -562,16 +563,16 @@
 // ── DATA ────────────────────────────────────────────────────────────────────
 
 const PORTFOLIO = [
-    { ticker:'IVVB11', company:'ETF iShares S&P 500', sector:'ETF / Índice',           price:'R$ 7.209', target:'R$ 8.340', upside:15.7, pl:19.0, weight:26, status:'same', currency:'BRL' },
-    { ticker:'MSFT34', company:'Microsoft',            sector:'Tecnologia',             price:'US$ 407,8', target:'US$ 560,3', upside:37.4, pl:21.2, weight:10, status:'same' },
-    { ticker:'NFLX34', company:'Netflix',              sector:'Entretenimento',          price:'US$ 93,6',  target:'US$ 115,7', upside:23.6, pl:24.5, weight:10, status:'same' },
-    { ticker:'MSBR34', company:'Morgan Stanley',       sector:'Serviços Financeiros',   price:'US$ 190,6', target:'US$ 204,4', upside:7.2,  pl:15.0, weight:10, status:'new'  },
-    { ticker:'GOGL34', company:'Alphabet (Google)',    sector:'Tecnologia',             price:'US$ 381,9', target:'US$ 406,4', upside:6.4,  pl:27.0, weight:10, status:'same' },
-    { ticker:'AMZO34', company:'Amazon',               sector:'Consumo',               price:'US$ 265,1', target:'US$ 303,7', upside:14.6, pl:27.2, weight:8,  status:'same' },
-    { ticker:'NVDC34', company:'NVIDIA',               sector:'Tecnologia',             price:'US$ 199,6', target:'US$ 270,4', upside:35.5, pl:23.8, weight:8,  status:'same' },
-    { ticker:'SCHW34', company:'Charles Schwab',       sector:'Serviços Financeiros',   price:'US$ 91,6',  target:'US$ 115,0', upside:25.5, pl:13.1, weight:6,  status:'same' },
-    { ticker:'MSCD34', company:'Mastercard',           sector:'Serviços Financeiros',   price:'US$ 502,9', target:'US$ 658,3', upside:30.9, pl:22.2, weight:6,  status:'new'  },
-    { ticker:'LILY34', company:'Eli Lilly',            sector:'Saúde',                 price:'US$ 934,6', target:'US$ 1.219,9', upside:30.5, pl:22.2, weight:6,  status:'same' },
+    { ticker:'IVVB11', company:'ETF iShares S&P 500', sector:'ETF / Índice',           price:'R$ 7.209',  target:'R$ 8.340',    upside:15.7, pl:19.0, prev:26, weight:26, status:'same' },
+    { ticker:'MSFT34', company:'Microsoft',            sector:'Tecnologia',             price:'US$ 407,8', target:'US$ 560,3',   upside:37.4, pl:21.2, prev:10, weight:10, status:'same' },
+    { ticker:'NFLX34', company:'Netflix',              sector:'Entretenimento',         price:'US$ 93,6',  target:'US$ 115,7',   upside:23.6, pl:24.5, prev:10, weight:10, status:'same' },
+    { ticker:'MSBR34', company:'Morgan Stanley',       sector:'Serviços Financeiros',   price:'US$ 190,6', target:'US$ 204,4',   upside:7.2,  pl:15.0, prev:0,  weight:10, status:'new'  },
+    { ticker:'GOGL34', company:'Alphabet (Google)',    sector:'Tecnologia',             price:'US$ 381,9', target:'US$ 406,4',   upside:6.4,  pl:27.0, prev:10, weight:10, status:'same' },
+    { ticker:'AMZO34', company:'Amazon',               sector:'Consumo',               price:'US$ 265,1', target:'US$ 303,7',   upside:14.6, pl:27.2, prev:8,  weight:8,  status:'same' },
+    { ticker:'NVDC34', company:'NVIDIA',               sector:'Tecnologia',             price:'US$ 199,6', target:'US$ 270,4',   upside:35.5, pl:23.8, prev:8,  weight:8,  status:'same' },
+    { ticker:'SCHW34', company:'Charles Schwab',       sector:'Serviços Financeiros',   price:'US$ 91,6',  target:'US$ 115,0',   upside:25.5, pl:13.1, prev:6,  weight:6,  status:'same' },
+    { ticker:'MSCD34', company:'Mastercard',           sector:'Serviços Financeiros',   price:'US$ 502,9', target:'US$ 658,3',   upside:30.9, pl:22.2, prev:0,  weight:6,  status:'new'  },
+    { ticker:'LILY34', company:'Eli Lilly',            sector:'Saúde',                 price:'US$ 934,6', target:'US$ 1.219,9', upside:30.5, pl:22.2, prev:6,  weight:6,  status:'same' },
 ];
 
 const THESIS = {
@@ -656,6 +657,7 @@ function renderTable() {
             <td class="right"><span class="target-val">${p.target}</span></td>
             <td class="right"><span class="upside-val">+${p.upside.toFixed(1)}%</span></td>
             <td class="right"><span class="pl-val">${p.pl.toFixed(1)}×</span></td>
+            <td class="right" style="color:var(--text-muted)">${p.prev > 0 ? p.prev + '%' : '—'}</td>
             <td>
                 <div class="weight-bar-wrap">
                     <div class="weight-bar">
