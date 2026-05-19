@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recomendações em Aberto · Safra · Maio 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <script src="js/brapi.js"></script>
     <style>
         :root {
             --gold:        #C9A84C;
@@ -415,7 +416,7 @@
         <div class="hero-top">
             <div class="hero-title-block">
                 <h1>Recomendações em <em>Aberto</em></h1>
-                <p>Equity Research · Safra Corretora · Referência 15/05/2026 · Preços via <strong style="color:var(--text)">TradingView</strong></p>
+                <p>Equity Research · Safra Corretora · Referência 15/05/2026 · Preços via <strong style="color:var(--gold)">brapi.dev</strong></p>
                 <div class="hero-meta">
                     <span class="analyst-chip">Luana Nunes · Estrategista</span>
                     <span class="analyst-chip">Cauê Pinheiro · Estrategista</span>
@@ -931,16 +932,13 @@ function toggleHist() {
     btn.textContent = open ? '▼ Ver histórico completo (41 operações)' : '▲ Fechar histórico';
 }
 
-// ─── REALTIME PRICES ─────────────────────────────────────────────────────────
-// Fonte: tv_price_server.py (br.tradingview.com via Playwright)
-//        GET http://localhost:8765/prices
-// Para iniciar: python tv_price_server.py
+// ─── REALTIME PRICES via brapi.dev ───────────────────────────────────────────
+// Cliente: js/brapi.js (BRAPI global)
+// Plano free: 1 ticker/request → todos os tickers disparados em paralelo
+// ENBR3 (delisted) → fallback mfinance.com.br
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TV_SERVER = 'http://localhost:8765';
-
-let priceMap     = {};
-let priceSource  = 'TradingView';
+let priceMap = {};
 
 function setLiveState(state, detail = '') {
     const dot   = document.getElementById('liveDot');
@@ -952,14 +950,14 @@ function setLiveState(state, detail = '') {
     } else if (state === 'ok') {
         dot.classList.add('active');
         const hm = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-        label.textContent = `${detail} · ${hm}`;
+        label.textContent = `brapi.dev · ${detail} · ${hm}`;
     } else if (state === 'partial') {
         dot.classList.add('loading');
         const hm = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-        label.textContent = `Parcial: ${detail} · ${hm}`;
+        label.textContent = `Parcial ${detail} · ${hm}`;
     } else {
         dot.classList.add('error');
-        label.textContent = 'Servidor indisponível';
+        label.textContent = 'Sem cotações';
     }
 }
 
@@ -974,14 +972,25 @@ function applyPrices() {
     const time = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     RECS.forEach((r, i) => {
         const curr = getCurrentPrice(r);
-        const meta = { source: priceSource, time };
         const pcEl = document.getElementById(`pc-${i}`);
         const mcEl = document.getElementById(`mc-${i}`);
-        if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr, meta);
+        if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr);
         if (mcEl) mcEl.innerHTML = buildMiniChart(r, curr);
     });
     document.getElementById('lastUpdated').textContent =
-        `⭐ Valendo Entrada · Preços via ${priceSource} · ${time}`;
+        `⭐ Valendo Entrada · brapi.dev · ${time}`;
+}
+
+// Fallback mfinance para tickers que brapi não retorna (ex: ENBR3 — delisted)
+async function fetchMfinanceFallback(ticker) {
+    const r = await fetch(
+        `https://mfinance.com.br/api/v1/stocks/${ticker}`,
+        { signal: AbortSignal.timeout(8000) }
+    );
+    if (!r.ok) throw new Error(`mfinance ${ticker} HTTP ${r.status}`);
+    const d = await r.json();
+    if (!d.lastPrice || d.lastPrice <= 0) throw new Error(`mfinance ${ticker} sem preço`);
+    return d.lastPrice;
 }
 
 async function fetchPrices(manual = false) {
@@ -989,27 +998,45 @@ async function fetchPrices(manual = false) {
     btn.classList.add('spinning');
     setLiveState('loading');
 
+    // Todos os tickers únicos necessários
     const allTickers = [...new Set(RECS.flatMap(r => r.t2 ? [r.t1, r.t2] : [r.t1]))];
 
-    try {
-        const url = `${TV_SERVER}/prices${manual ? '?force=true' : ''}`;
-        const r   = await fetch(url, { signal: AbortSignal.timeout(15000) });
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const d = await r.json();
-        if (!d.prices || Object.keys(d.prices).length === 0)
-            throw new Error('sem preços');
+    // Buscar via BRAPI em paralelo (1 ticker/request — plano free)
+    const brapiMap = await BRAPI.multiQuote(allTickers);
 
-        priceMap   = d.prices;
-        priceSource = `TradingView`;
-        const ok     = Object.keys(priceMap).length;
-        const failed = allTickers.length - ok;
+    // Para tickers sem resultado na brapi → tentar mfinance
+    const missingTickers = allTickers.filter(t => brapiMap[t] == null);
+    if (missingTickers.length > 0) {
+        const fallbacks = await Promise.allSettled(
+            missingTickers.map(t =>
+                fetchMfinanceFallback(t)
+                    .then(price => ({ t, price }))
+                    .catch(() => ({ t, price: null }))
+            )
+        );
+        fallbacks.forEach(res => {
+            if (res.status === 'fulfilled' && res.value.price != null) {
+                // Injetar no mapa com formato compatível
+                brapiMap[res.value.t] = { regularMarketPrice: res.value.price };
+            }
+        });
+    }
 
+    // Montar priceMap final
+    priceMap = {};
+    let ok = 0;
+    allTickers.forEach(t => {
+        const price = brapiMap[t]?.regularMarketPrice;
+        if (price != null) { priceMap[t] = price; ok++; }
+    });
+
+    console.log(`[M02] brapi.dev: ${ok}/${allTickers.length} ok`, priceMap);
+
+    if (ok > 0) {
         applyPrices();
-        setLiveState(failed === 0 ? 'ok' : 'partial', `${ok}/${allTickers.length} ativos`);
-        console.log(`[M02] TradingView: ${ok} ok / ${failed} sem dados`, priceMap);
-
-    } catch (e) {
-        console.error(`[M02] Erro ao buscar preços: ${e.message}`);
+        setLiveState(ok === allTickers.length ? 'ok' : 'partial',
+            `${ok}/${allTickers.length} ativos`);
+    } else {
         setLiveState('error');
     }
 
