@@ -895,22 +895,24 @@ function toggleHist() {
 
 // ─── REALTIME PRICES ─────────────────────────────────────────────────────────
 //
-// Fontes (ambas gratuitas, CORS habilitado):
-//   • mfinance.com.br  — ações B3 regulares, sem autenticação
-//   • brapi.dev        — BDRs (AMZO34, INBR32), requer token (demo = single-ticker)
+// Fonte primária : tv_price_server.py (TradingView via tvdatafeed)
+//                  → http://localhost:8765/prices
 //
-// Outras APIs compatíveis (CORS + gratuitas com cadastro):
-//   • brapi.dev (conta free)  → https://brapi.dev — cobre tudo, incluindo BDRs
-//   • Twelve Data (free tier) → https://twelvedata.com — 800 req/dia, B3 c/ suffix :BVMF
-//   • Alpha Vantage (free)    → https://alphavantage.co — 25 req/dia, B3 c/ suffix .SAX
+// Fallback 1     : mfinance.com.br  (ações B3, sem autenticação)
+// Fallback 2     : brapi.dev        (BDRs: AMZO34, INBR32)
 //
-// Yahoo Finance: cobre tudo com .SA, MAS sem Access-Control-Allow-Origin → não funciona no browser.
+// Para ativar a fonte TradingView, execute no terminal:
+//   python tv_price_server.py
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Tickers que só existem na brapi (BDRs sem cobertura no mfinance)
-const BDR_ONLY = new Set(['AMZO34', 'INBR32']);
+const TV_SERVER = 'http://localhost:8765';
+
+// BDRs (AMZO34, INBR32): não cobertos por mfinance nem brapi/demo.
+// Requerem o tv_price_server.py local (TradingView) para exibir preço.
+const BDR_ONLY = new Set(); // brapi/demo desativado — sem cobertura real
 
 let priceMap = {};
+let priceSource = '—';
 
 function setLiveState(state, detail = '') {
     const dot   = document.getElementById('liveDot');
@@ -949,10 +951,21 @@ function applyPrices() {
         if (mcEl) mcEl.innerHTML = buildMiniChart(r, curr);
     });
     document.getElementById('lastUpdated').textContent =
-        `⭐ Valendo Entrada · Preços atualizados às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+        `⭐ Valendo Entrada · Preços via ${priceSource} · ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
 }
 
-// Busca um ticker no mfinance.com.br (ações B3 regulares, sem auth, CORS livre)
+// ── Fonte 1: TV Price Server (TradingView local) ──────────────────────────────
+async function fetchFromTVServer(force = false) {
+    const url = `${TV_SERVER}/prices${force ? '?force=true' : ''}`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error(`tv_server HTTP ${r.status}`);
+    const d = await r.json();
+    if (!d.prices || Object.keys(d.prices).length === 0)
+        throw new Error('tv_server: sem preços');
+    return d; // { prices: {...}, updated: "HH:MM:SS", source: "TradingView..." }
+}
+
+// ── Fonte 2: mfinance.com.br ──────────────────────────────────────────────────
 async function fetchMfinance(ticker) {
     const r = await fetch(
         `https://mfinance.com.br/api/v1/stocks/${ticker}`,
@@ -964,7 +977,7 @@ async function fetchMfinance(ticker) {
     return { ticker, price: d.lastPrice, src: 'mfinance' };
 }
 
-// Busca um ticker no brapi.dev (BDRs, single-ticker com token=demo)
+// ── Fonte 3: brapi.dev ────────────────────────────────────────────────────────
 async function fetchBrapi(ticker) {
     const r = await fetch(
         `https://brapi.dev/api/quote/${ticker}?token=demo&fundamental=false`,
@@ -977,49 +990,61 @@ async function fetchBrapi(ticker) {
     return { ticker, price, src: 'brapi' };
 }
 
+// ── Fallback: mfinance + brapi em paralelo ────────────────────────────────────
+async function fetchFallback() {
+    const allTickers = [...new Set(RECS.flatMap(r => r.t2 ? [r.t1, r.t2] : [r.t1]))];
+    const jobs = allTickers.map(ticker => {
+        if (BDR_ONLY.has(ticker)) {
+            return fetchBrapi(ticker).catch(() =>
+                fetchMfinance(ticker).catch(() => ({ ticker, price: null, src: 'none' }))
+            );
+        } else {
+            return fetchMfinance(ticker).catch(() =>
+                fetchBrapi(ticker).catch(() => ({ ticker, price: null, src: 'none' }))
+            );
+        }
+    });
+    const results = await Promise.allSettled(jobs);
+    const map = {};
+    results.forEach(res => {
+        const val = res.status === 'fulfilled' ? res.value : null;
+        if (val?.price != null) map[val.ticker] = val.price;
+    });
+    return map;
+}
+
+// ── Orquestrador principal ────────────────────────────────────────────────────
 async function fetchPrices(manual = false) {
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spinning');
     setLiveState('loading');
 
-    // Todos os tickers únicos necessários
     const allTickers = [...new Set(RECS.flatMap(r => r.t2 ? [r.t1, r.t2] : [r.t1]))];
-
-    // Disparar todas as buscas em paralelo
-    const jobs = allTickers.map(ticker => {
-        if (BDR_ONLY.has(ticker)) {
-            return fetchBrapi(ticker).catch(() =>
-                // Se brapi falhar, tenta mfinance como último recurso
-                fetchMfinance(ticker).catch(() => ({ ticker, price: null, src: 'none' }))
-            );
-        } else {
-            return fetchMfinance(ticker).catch(() =>
-                // Se mfinance falhar, tenta brapi como fallback
-                fetchBrapi(ticker).catch(() => ({ ticker, price: null, src: 'none' }))
-            );
-        }
-    });
-
-    const results = await Promise.allSettled(jobs);
-
-    priceMap = {};
     let ok = 0, failed = 0;
-    results.forEach(res => {
-        const val = res.status === 'fulfilled' ? res.value : null;
-        if (val?.price != null) {
-            priceMap[val.ticker] = val.price;
-            ok++;
-        } else {
-            failed++;
-        }
-    });
 
-    console.log(`[M02] Preços: ${ok} ok / ${failed} sem dados`, priceMap);
+    try {
+        // Tenta TV Server primeiro
+        const tvData = await fetchFromTVServer(manual);
+        priceMap   = tvData.prices;
+        priceSource = `TradingView (${tvData.updated})`;
+        ok     = Object.keys(priceMap).length;
+        failed = allTickers.length - ok;
+        console.log(`[M02] TradingView: ${ok} ok / ${failed} erro`, priceMap);
+
+    } catch (tvErr) {
+        console.warn(`[M02] TV Server indisponível (${tvErr.message}), usando fallback…`);
+        // Fallback: mfinance + brapi
+        priceMap   = await fetchFallback();
+        priceSource = 'mfinance/brapi';
+        ok     = Object.keys(priceMap).length;
+        failed = allTickers.length - ok;
+        console.log(`[M02] Fallback: ${ok} ok / ${failed} erro`, priceMap);
+    }
 
     if (ok > 0) {
         applyPrices();
         const state = failed === 0 ? 'ok' : 'partial';
-        setLiveState(state, `${ok}/${allTickers.length} ativos`);
+        setLiveState(state, `${ok}/${allTickers.length} · ${priceSource.split(' ')[0]}`);
     } else {
         setLiveState('error');
     }
