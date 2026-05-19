@@ -828,12 +828,24 @@ function buildResultCell(rec, curr) {
     const color  = isPos ? 'var(--green)' : (isNeg ? 'var(--red)' : 'var(--text-muted)');
     const sign   = pct >= 0 ? '+' : '';
 
-    // Barra de progresso em direção ao objetivo (0 % → objetivo)
-    // Progresso = pct / ganho_potencial (capped 0–100%)
-    const progress = rec.ganho > 0
-        ? Math.max(0, Math.min(100, pct / rec.ganho * 100))
-        : 0;
-    const barColor = isPos ? 'var(--green)' : (isNeg ? 'var(--red)' : 'var(--dark-5)');
+    // Barra dupla: positivo → progresso em direção ao objetivo (rec.ganho)
+    //              negativo → progresso em direção ao stop/perda máx (rec.perda, negativo)
+    // Ambos capped 0–100%. rec.perda é negativo (ex: -4.03), pct negativo → ratio positivo.
+    let progress, barColor;
+    if (isPos) {
+        progress = rec.ganho > 0
+            ? Math.max(0, Math.min(100, pct / rec.ganho * 100))
+            : 0;
+        barColor = 'var(--green)';
+    } else if (isNeg) {
+        progress = rec.perda < 0
+            ? Math.max(0, Math.min(100, pct / rec.perda * 100))
+            : 0;
+        barColor = 'var(--red)';
+    } else {
+        progress = 0;
+        barColor = 'var(--dark-5)';
+    }
 
     return `<span style="font-size:13px;font-weight:800;color:${color}">${sign}${pct.toFixed(2)}%</span>
         <div style="margin-top:4px;height:3px;background:var(--dark-4);border-radius:2px;width:64px;margin-left:auto">
