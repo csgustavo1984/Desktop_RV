@@ -112,6 +112,24 @@
         .refresh-btn.spinning svg { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ── COUNTDOWN ── */
+        .countdown-wrap {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 11px; color: var(--text-muted);
+            background: var(--dark-3); border: 1px solid var(--dark-5);
+            padding: 4px 10px; border-radius: 20px;
+        }
+        .countdown-ring {
+            position: relative; width: 16px; height: 16px; flex-shrink: 0;
+        }
+        .countdown-ring svg { transform: rotate(-90deg); display: block; }
+        .countdown-ring .ring-bg   { fill: none; stroke: var(--dark-4); stroke-width: 2.5; }
+        .countdown-ring .ring-fill { fill: none; stroke: var(--gold);   stroke-width: 2.5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear;
+        }
+        .countdown-text { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
         /* ── HERO ── */
         .hero {
             background: linear-gradient(135deg, var(--dark-2) 0%, var(--dark-3) 60%, #1a2035 100%);
@@ -398,7 +416,17 @@
             <span class="live-dot loading" id="liveDot"></span>
             <span id="liveLabel">Carregando…</span>
         </span>
-        <button class="refresh-btn" id="refreshBtn" onclick="fetchPrices(true)" title="Atualizar preços">
+        <div class="countdown-wrap" title="Auto-refresh a cada 30 segundos">
+            <div class="countdown-ring">
+                <svg width="16" height="16" viewBox="0 0 16 16">
+                    <circle class="ring-bg"   cx="8" cy="8" r="5.5"/>
+                    <circle class="ring-fill" cx="8" cy="8" r="5.5" id="countdownRing"
+                        stroke-dasharray="34.56" stroke-dashoffset="0"/>
+                </svg>
+            </div>
+            <span class="countdown-text" id="countdownText">30s</span>
+        </div>
+        <button class="refresh-btn" id="refreshBtn" title="Atualizar preços agora">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M10 2A5 5 0 1 0 11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 <polyline points="8,0 10,2 8,4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1043,15 +1071,64 @@ async function fetchPrices(manual = false) {
     btn.classList.remove('spinning');
 }
 
+// ─── COUNTDOWN RING ───────────────────────────────────────────────────────────
+const REFRESH_INTERVAL = 30; // segundos
+const CIRCUMFERENCE    = 34.56; // 2π × r (r = 5.5)
+
+let countdownSec    = REFRESH_INTERVAL;
+let countdownTimer  = null;
+let autoRefreshTimer = null;
+
+function startCountdown() {
+    countdownSec = REFRESH_INTERVAL;
+    updateCountdownUI();
+
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+        countdownSec = Math.max(0, countdownSec - 1);
+        updateCountdownUI();
+    }, 1000);
+}
+
+function updateCountdownUI() {
+    const ring = document.getElementById('countdownRing');
+    const text = document.getElementById('countdownText');
+    if (!ring || !text) return;
+
+    const pct    = countdownSec / REFRESH_INTERVAL;            // 1 → 0
+    const offset = CIRCUMFERENCE * (1 - pct);                  // 0 → CIRCUMFERENCE
+    ring.style.strokeDashoffset = offset;
+
+    // Cor: dourado normal → laranja nos últimos 5s
+    ring.style.stroke = countdownSec <= 5 ? 'var(--orange)' : 'var(--gold)';
+    text.textContent  = `${countdownSec}s`;
+    text.style.color  = countdownSec <= 5 ? 'var(--orange)' : 'var(--text-muted)';
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 renderRecTable();
 renderEncerradas();
 renderDist();
 renderHistorico();
 
-// Fetch prices on load, then auto-refresh every 60 s
-fetchPrices();
-setInterval(() => fetchPrices(), 30000);
+// Fetch inicial + auto-refresh a cada 30s com countdown visual
+fetchPrices().then(() => startCountdown());
+
+autoRefreshTimer = setInterval(() => {
+    fetchPrices().then(() => startCountdown());
+}, REFRESH_INTERVAL * 1000);
+
+// Botão manual reinicia o countdown
+document.getElementById('refreshBtn').addEventListener('click', () => {
+    if (countdownTimer)  clearInterval(countdownTimer);
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    fetchPrices().then(() => {
+        startCountdown();
+        autoRefreshTimer = setInterval(() => {
+            fetchPrices().then(() => startCountdown());
+        }, REFRESH_INTERVAL * 1000);
+    });
+});
 </script>
 </body>
 </html>
