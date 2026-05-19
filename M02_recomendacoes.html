@@ -238,7 +238,7 @@
         }
 
         /* ── PREÇO ATUAL CELL ── */
-        .price-cell { text-align: right; min-width: 80px; }
+        .price-cell { text-align: right; min-width: 80px; position: relative; cursor: default; }
         .price-cell .price-val {
             font-size: 13px; font-weight: 700; color: var(--text);
             display: block; line-height: 1.2;
@@ -249,6 +249,37 @@
         .price-cell .price-loading {
             font-size: 11px; color: var(--text-dim);
         }
+
+        /* ── TOOLTIP DE FONTE ── */
+        .price-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            right: 0;
+            background: var(--dark-4);
+            border: 1px solid var(--dark-5);
+            border-radius: var(--radius-sm);
+            padding: 7px 10px;
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+        .price-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%; right: 12px;
+            border: 5px solid transparent;
+            border-top-color: var(--dark-5);
+        }
+        .price-tooltip .tt-source {
+            font-size: 11px; font-weight: 700; color: var(--gold);
+            display: block; margin-bottom: 2px;
+        }
+        .price-tooltip .tt-time {
+            font-size: 10px; color: var(--text-muted); display: block;
+        }
+        .price-cell:hover .price-tooltip { display: block; }
         @keyframes shimmer {
             0%,100% { opacity: 0.4; } 50% { opacity: 1; }
         }
@@ -733,7 +764,7 @@ function buildMiniChart(rec, curr) {
 }
 
 // ─── PRICE CELL HTML ─────────────────────────────────────────────────────────
-function buildPriceCell(rec, curr) {
+function buildPriceCell(rec, curr, meta) {
     if (curr == null) {
         return `<div class="price-cell">
             <span class="price-val shimmer" style="color:var(--text-dim)">—</span>
@@ -751,9 +782,16 @@ function buildPriceCell(rec, curr) {
     color = pct >  0.05 ? 'var(--green)' : (pct < -0.05 ? 'var(--red)' : 'var(--text-muted)');
     arrow = pct >  0.05 ? '↑' : (pct < -0.05 ? '↓' : '→');
 
+    const tooltip = meta ? `
+        <div class="price-tooltip">
+            <span class="tt-source">📡 ${meta.source}</span>
+            <span class="tt-time">🕐 ${meta.time}</span>
+        </div>` : '';
+
     return `<div class="price-cell">
         <span class="price-val">${fmt}</span>
         <span class="price-delta" style="color:${color}">${arrow} ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>
+        ${tooltip}
     </div>`;
 }
 
@@ -911,8 +949,9 @@ const TV_SERVER = 'http://localhost:8765';
 // Requerem o tv_price_server.py local (TradingView) para exibir preço.
 const BDR_ONLY = new Set(); // brapi/demo desativado — sem cobertura real
 
-let priceMap = {};
-let priceSource = '—';
+let priceMap     = {};
+let priceSource  = '—';
+let priceMetaMap = {}; // { ticker: { source, time } }
 
 function setLiveState(state, detail = '') {
     const dot   = document.getElementById('liveDot');
@@ -943,15 +982,17 @@ function getCurrentPrice(rec) {
 }
 
 function applyPrices() {
+    const time = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     RECS.forEach((r, i) => {
         const curr = getCurrentPrice(r);
+        const meta = { source: priceSource, time };
         const pcEl = document.getElementById(`pc-${i}`);
         const mcEl = document.getElementById(`mc-${i}`);
-        if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr);
+        if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr, meta);
         if (mcEl) mcEl.innerHTML = buildMiniChart(r, curr);
     });
     document.getElementById('lastUpdated').textContent =
-        `⭐ Valendo Entrada · Preços via ${priceSource} · ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+        `⭐ Valendo Entrada · Preços via ${priceSource} · ${time}`;
 }
 
 // ── Fonte 1: TV Price Server (TradingView local) ──────────────────────────────
