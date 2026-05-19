@@ -517,6 +517,7 @@
                             <th>Ativo</th>
                             <th class="center">Call</th>
                             <th class="right">Preço Atual</th>
+                            <th class="right">Resultado</th>
                             <th class="right">Entrada</th>
                             <th class="right">Objetivo</th>
                             <th class="right">Ganho Pot.</th>
@@ -808,6 +809,38 @@ function buildMiniChart(rec, curr) {
     return s;
 }
 
+// ─── RESULTADO % (entrada vs preço atual) ────────────────────────────────────
+// Compra: (curr - entrada) / entrada × 100
+// Venda:  (entrada - curr) / entrada × 100   ← ganho quando cai
+// L&S:    (curr - entrada) / entrada × 100   ← ratio atual vs ratio de entrada
+function buildResultCell(rec, curr) {
+    if (curr == null) {
+        return `<span style="font-size:12px;color:var(--text-dim)">—</span>`;
+    }
+
+    let pct;
+    if (rec.call === 'Compra')     pct = (curr - rec.entrada) / rec.entrada * 100;
+    else if (rec.call === 'Venda') pct = (rec.entrada - curr) / rec.entrada * 100;
+    else                           pct = (curr - rec.entrada) / rec.entrada * 100;
+
+    const isPos  = pct >  0.05;
+    const isNeg  = pct < -0.05;
+    const color  = isPos ? 'var(--green)' : (isNeg ? 'var(--red)' : 'var(--text-muted)');
+    const sign   = pct >= 0 ? '+' : '';
+
+    // Barra de progresso em direção ao objetivo (0 % → objetivo)
+    // Progresso = pct / ganho_potencial (capped 0–100%)
+    const progress = rec.ganho > 0
+        ? Math.max(0, Math.min(100, pct / rec.ganho * 100))
+        : 0;
+    const barColor = isPos ? 'var(--green)' : (isNeg ? 'var(--red)' : 'var(--dark-5)');
+
+    return `<span style="font-size:13px;font-weight:800;color:${color}">${sign}${pct.toFixed(2)}%</span>
+        <div style="margin-top:4px;height:3px;background:var(--dark-4);border-radius:2px;width:64px;margin-left:auto">
+            <div style="height:100%;width:${progress}%;background:${barColor};border-radius:2px;transition:width 0.4s ease"></div>
+        </div>`;
+}
+
 // ─── PRICE CELL HTML ─────────────────────────────────────────────────────────
 // changePct: variação do dia (regularMarketChangePercent) fornecida pela brapi.
 //   → Para ativos normais: usa changePct do dia (ex: -3,33%)
@@ -886,6 +919,7 @@ function renderRecTable() {
             <td>${ativoCell}</td>
             <td class="center">${callBadge(r.call)}</td>
             <td class="right" id="pc-${i}">${buildPriceCell(r, null)}</td>
+            <td class="right" id="rc-${i}"><span style="font-size:12px;color:var(--text-dim)">—</span></td>
             <td class="right"><span class="val-neu">${fmtPrice(r, r.entrada)}</span></td>
             <td class="right"><span class="val-neu">${fmtPrice(r, r.objetivo)}</span></td>
             <td class="right"><span class="val-pos">+${r.ganho.toFixed(2)}%</span></td>
@@ -1049,8 +1083,10 @@ function applyPrices() {
         const curr      = getCurrentPrice(r);
         const changePct = getCurrentChangePct(r);
         const pcEl = document.getElementById(`pc-${i}`);
+        const rcEl = document.getElementById(`rc-${i}`);
         const mcEl = document.getElementById(`mc-${i}`);
         if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr, changePct);
+        if (rcEl) rcEl.innerHTML = buildResultCell(r, curr);
         if (mcEl) mcEl.innerHTML = buildMiniChart(r, curr);
     });
     document.getElementById('lastUpdated').textContent =
