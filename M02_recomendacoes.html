@@ -809,7 +809,11 @@ function buildMiniChart(rec, curr) {
 }
 
 // ─── PRICE CELL HTML ─────────────────────────────────────────────────────────
-function buildPriceCell(rec, curr, meta) {
+// changePct: variação do dia (regularMarketChangePercent) fornecida pela brapi.
+//   → Para ativos normais: usa changePct do dia (ex: -3,33%)
+//   → Para L&S: usa P&L desde entrada do ratio (brapi não tem changePct de ratio)
+//   → Se changePct vier null (fallback mfinance): usa P&L desde entrada também
+function buildPriceCell(rec, curr, changePct) {
     if (curr == null) {
         return `<div class="price-cell">
             <span class="price-val shimmer" style="color:var(--text-dim)">—</span>
@@ -817,26 +821,27 @@ function buildPriceCell(rec, curr, meta) {
         </div>`;
     }
 
-    const fmt  = rec.ls ? curr.toFixed(4) : curr.toFixed(2);
-    let   pct, color, arrow;
+    const fmt = rec.ls ? curr.toFixed(4) : curr.toFixed(2);
+    let pct, color, arrow, label;
 
-    if (rec.call === 'Compra')     pct = (curr - rec.entrada) / rec.entrada * 100;
-    else if (rec.call === 'Venda') pct = (rec.entrada - curr) / rec.entrada * 100;
-    else                           pct = (curr - rec.entrada) / rec.entrada * 100;
+    if (!rec.ls && changePct != null) {
+        // ── Variação do dia (fonte: brapi regularMarketChangePercent)
+        pct   = changePct;
+        label = 'hoje';
+    } else {
+        // ── P&L desde a entrada (L&S ou fallback sem changePct)
+        if (rec.call === 'Compra')     pct = (curr - rec.entrada) / rec.entrada * 100;
+        else if (rec.call === 'Venda') pct = (rec.entrada - curr) / rec.entrada * 100;
+        else                           pct = (curr - rec.entrada) / rec.entrada * 100;
+        label = 'vs entrada';
+    }
 
     color = pct >  0.05 ? 'var(--green)' : (pct < -0.05 ? 'var(--red)' : 'var(--text-muted)');
     arrow = pct >  0.05 ? '↑' : (pct < -0.05 ? '↓' : '→');
 
-    const tooltip = meta ? `
-        <div class="price-tooltip">
-            <span class="tt-source">📡 ${meta.source}</span>
-            <span class="tt-time">🕐 ${meta.time}</span>
-        </div>` : '';
-
     return `<div class="price-cell">
         <span class="price-val">${fmt}</span>
-        <span class="price-delta" style="color:${color}">${arrow} ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>
-        ${tooltip}
+        <span class="price-delta" style="color:${color}" title="${label}">${arrow} ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>
     </div>`;
 }
 
@@ -1021,20 +1026,31 @@ function setLiveState(state, detail = '') {
     }
 }
 
+// priceMap[ticker] = { price, changePct }
+//   price     → regularMarketPrice
+//   changePct → regularMarketChangePercent (null quando vem do fallback mfinance)
+
 function getCurrentPrice(rec) {
-    if (!rec.ls) return priceMap[rec.t1] ?? null;
-    const p1 = priceMap[rec.t1];
-    const p2 = priceMap[rec.t2];
+    if (!rec.ls) return priceMap[rec.t1]?.price ?? null;
+    const p1 = priceMap[rec.t1]?.price;
+    const p2 = priceMap[rec.t2]?.price;
     return (p1 != null && p2 != null && p2 > 0) ? p1 / p2 : null;
+}
+
+function getCurrentChangePct(rec) {
+    // L&S: não tem changePct de ratio → retorna null (buildPriceCell usará P&L vs entrada)
+    if (rec.ls) return null;
+    return priceMap[rec.t1]?.changePct ?? null;
 }
 
 function applyPrices() {
     const time = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     RECS.forEach((r, i) => {
-        const curr = getCurrentPrice(r);
+        const curr      = getCurrentPrice(r);
+        const changePct = getCurrentChangePct(r);
         const pcEl = document.getElementById(`pc-${i}`);
         const mcEl = document.getElementById(`mc-${i}`);
-        if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr);
+        if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr, changePct);
         if (mcEl) mcEl.innerHTML = buildMiniChart(r, curr);
     });
     document.getElementById('lastUpdated').textContent =
@@ -1082,12 +1098,20 @@ async function fetchPrices(manual = false) {
         });
     }
 
-    // Montar priceMap final
+    // Montar priceMap final: { price, changePct }
+    // changePct = regularMarketChangePercent da brapi (null para fallback mfinance)
     priceMap = {};
     let ok = 0;
     allTickers.forEach(t => {
-        const price = brapiMap[t]?.regularMarketPrice;
-        if (price != null) { priceMap[t] = price; ok++; }
+        const d     = brapiMap[t];
+        const price = d?.regularMarketPrice;
+        if (price != null) {
+            priceMap[t] = {
+                price,
+                changePct: d?.regularMarketChangePercent ?? null
+            };
+            ok++;
+        }
     });
 
     console.log(`[M02] brapi.dev: ${ok}/${allTickers.length} ok`, priceMap);
