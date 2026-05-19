@@ -384,7 +384,7 @@
         <div class="hero-top">
             <div class="hero-title-block">
                 <h1>Recomendações em <em>Aberto</em></h1>
-                <p>Equity Research · Safra Corretora · Referência 15/05/2026 · Preços via <strong style="color:var(--text)">brapi.dev</strong></p>
+                <p>Equity Research · Safra Corretora · Referência 15/05/2026 · Preços via <strong style="color:var(--text)">mfinance.com.br</strong> + <strong style="color:var(--text)">brapi.dev</strong></p>
                 <div class="hero-meta">
                     <span class="analyst-chip">Luana Nunes · Estrategista</span>
                     <span class="analyst-chip">Cauê Pinheiro · Estrategista</span>
@@ -894,22 +894,42 @@ function toggleHist() {
 }
 
 // ─── REALTIME PRICES ─────────────────────────────────────────────────────────
+//
+// Fontes (ambas gratuitas, CORS habilitado):
+//   • mfinance.com.br  — ações B3 regulares, sem autenticação
+//   • brapi.dev        — BDRs (AMZO34, INBR32), requer token (demo = single-ticker)
+//
+// Outras APIs compatíveis (CORS + gratuitas com cadastro):
+//   • brapi.dev (conta free)  → https://brapi.dev — cobre tudo, incluindo BDRs
+//   • Twelve Data (free tier) → https://twelvedata.com — 800 req/dia, B3 c/ suffix :BVMF
+//   • Alpha Vantage (free)    → https://alphavantage.co — 25 req/dia, B3 c/ suffix .SAX
+//
+// Yahoo Finance: cobre tudo com .SA, MAS sem Access-Control-Allow-Origin → não funciona no browser.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Tickers que só existem na brapi (BDRs sem cobertura no mfinance)
+const BDR_ONLY = new Set(['AMZO34', 'INBR32']);
+
 let priceMap = {};
 
-function setLiveState(state) {
+function setLiveState(state, detail = '') {
     const dot   = document.getElementById('liveDot');
     const label = document.getElementById('liveLabel');
     dot.className = 'live-dot';
     if (state === 'loading') {
         dot.classList.add('loading');
-        label.textContent = 'Buscando…';
+        label.textContent = 'Buscando cotações…';
     } else if (state === 'ok') {
         dot.classList.add('active');
-        const now = new Date();
-        label.textContent = `Atualizado ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+        const hm = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+        label.textContent = `${detail} · ${hm}`;
+    } else if (state === 'partial') {
+        dot.classList.add('loading');
+        const hm = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+        label.textContent = `Parcial: ${detail} · ${hm}`;
     } else {
         dot.classList.add('error');
-        label.textContent = 'Erro ao buscar';
+        label.textContent = 'Sem cotações';
     }
 }
 
@@ -917,7 +937,7 @@ function getCurrentPrice(rec) {
     if (!rec.ls) return priceMap[rec.t1] ?? null;
     const p1 = priceMap[rec.t1];
     const p2 = priceMap[rec.t2];
-    return (p1 != null && p2 != null && p2 !== 0) ? p1 / p2 : null;
+    return (p1 != null && p2 != null && p2 > 0) ? p1 / p2 : null;
 }
 
 function applyPrices() {
@@ -928,9 +948,33 @@ function applyPrices() {
         if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr);
         if (mcEl) mcEl.innerHTML = buildMiniChart(r, curr);
     });
-    // Update lastUpdated note
     document.getElementById('lastUpdated').textContent =
         `⭐ Valendo Entrada · Preços atualizados às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+}
+
+// Busca um ticker no mfinance.com.br (ações B3 regulares, sem auth, CORS livre)
+async function fetchMfinance(ticker) {
+    const r = await fetch(
+        `https://mfinance.com.br/api/v1/stocks/${ticker}`,
+        { signal: AbortSignal.timeout(8000) }
+    );
+    if (!r.ok) throw new Error(`mfinance ${ticker}: HTTP ${r.status}`);
+    const d = await r.json();
+    if (!d.lastPrice || d.lastPrice <= 0) throw new Error(`mfinance ${ticker}: sem preço`);
+    return { ticker, price: d.lastPrice, src: 'mfinance' };
+}
+
+// Busca um ticker no brapi.dev (BDRs, single-ticker com token=demo)
+async function fetchBrapi(ticker) {
+    const r = await fetch(
+        `https://brapi.dev/api/quote/${ticker}?token=demo&fundamental=false`,
+        { signal: AbortSignal.timeout(8000) }
+    );
+    if (!r.ok) throw new Error(`brapi ${ticker}: HTTP ${r.status}`);
+    const d = await r.json();
+    const price = d.results?.[0]?.regularMarketPrice;
+    if (price == null) throw new Error(`brapi ${ticker}: sem preço`);
+    return { ticker, price, src: 'brapi' };
 }
 
 async function fetchPrices(manual = false) {
@@ -938,40 +982,49 @@ async function fetchPrices(manual = false) {
     btn.classList.add('spinning');
     setLiveState('loading');
 
-    // Collect all unique tickers
-    const tickers = [...new Set(RECS.flatMap(r => r.t2 ? [r.t1, r.t2] : [r.t1]))];
-    const url = `https://brapi.dev/api/quote/${tickers.join(',')}?fundamental=false&dividends=false`;
+    // Todos os tickers únicos necessários
+    const allTickers = [...new Set(RECS.flatMap(r => r.t2 ? [r.t1, r.t2] : [r.t1]))];
 
-    try {
-        const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data = await resp.json();
-
-        if (data.results && data.results.length > 0) {
-            priceMap = {};
-            data.results.forEach(q => {
-                if (q.regularMarketPrice != null)
-                    priceMap[q.symbol] = q.regularMarketPrice;
-            });
-            applyPrices();
-            setLiveState('ok');
+    // Disparar todas as buscas em paralelo
+    const jobs = allTickers.map(ticker => {
+        if (BDR_ONLY.has(ticker)) {
+            return fetchBrapi(ticker).catch(() =>
+                // Se brapi falhar, tenta mfinance como último recurso
+                fetchMfinance(ticker).catch(() => ({ ticker, price: null, src: 'none' }))
+            );
         } else {
-            throw new Error('Sem resultados');
+            return fetchMfinance(ticker).catch(() =>
+                // Se mfinance falhar, tenta brapi como fallback
+                fetchBrapi(ticker).catch(() => ({ ticker, price: null, src: 'none' }))
+            );
         }
-    } catch (err) {
-        console.warn('[M02] Falha ao buscar preços:', err.message);
+    });
+
+    const results = await Promise.allSettled(jobs);
+
+    priceMap = {};
+    let ok = 0, failed = 0;
+    results.forEach(res => {
+        const val = res.status === 'fulfilled' ? res.value : null;
+        if (val?.price != null) {
+            priceMap[val.ticker] = val.price;
+            ok++;
+        } else {
+            failed++;
+        }
+    });
+
+    console.log(`[M02] Preços: ${ok} ok / ${failed} sem dados`, priceMap);
+
+    if (ok > 0) {
+        applyPrices();
+        const state = failed === 0 ? 'ok' : 'partial';
+        setLiveState(state, `${ok}/${allTickers.length} ativos`);
+    } else {
         setLiveState('error');
-        // Show stale state in cells without breaking layout
-        RECS.forEach((r, i) => {
-            const pcEl = document.getElementById(`pc-${i}`);
-            if (pcEl) pcEl.innerHTML = `<div class="price-cell">
-                <span class="price-val" style="color:var(--text-dim)">—</span>
-                <span class="price-delta" style="color:var(--red)">sem dados</span>
-            </div>`;
-        });
-    } finally {
-        btn.classList.remove('spinning');
     }
+
+    btn.classList.remove('spinning');
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
