@@ -228,6 +228,9 @@
         .rec-table tbody td.center { text-align: center; }
 
         /* ── TICKER CELL ── */
+        .rec-table th:first-child,
+        .rec-table td:first-child { min-width: 200px; }
+
         .ticker-cell { display: flex; align-items: center; gap: 10px; }
         .ticker-icon {
             width: 34px; height: 34px; border-radius: 8px;
@@ -236,6 +239,19 @@
         }
         .ticker-name    { font-weight: 700; color: var(--text); font-size: 13px; }
         .ticker-company { font-size: 11px; color: var(--text-muted); }
+
+        /* ── L&S PAIR CELL ── */
+        .ls-pair { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .ls-t1   { font-weight: 800; color: var(--text); font-size: 13px; }
+        .ls-sep  { color: var(--text-dim); font-size: 12px; font-weight: 400; }
+        .ls-t2   { font-weight: 800; color: var(--text); font-size: 13px; }
+        .ls-chip {
+            font-size: 9px; font-weight: 800; padding: 1px 5px;
+            border-radius: 3px; letter-spacing: 0.5px; vertical-align: middle;
+        }
+        .ls-chip-l { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+        .ls-chip-s { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(231,76,60,0.3); }
+        .ls-ratio-label { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
 
         /* ── CALL BADGE ── */
         .call-badge {
@@ -616,9 +632,9 @@ const RECS = [
     { ativo:'AMZO34',   empresa:'Amazon (BDR)',        setor:'Tecnologia',  call:'Compra', entrada:66.10, objetivo:68.55, ganho: 3.71, stop:63.66, perda:-3.69, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:false, t1:'AMZO34', t2:null    },
     { ativo:'GGBR4',    empresa:'Gerdau',              setor:'Siderurgia',  call:'Compra', entrada:23.79, objetivo:25.05, ganho: 5.30, stop:22.55, perda:-5.21, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:true,  t1:'GGBR4',  t2:null    },
     { ativo:'SANB11',   empresa:'Santander Brasil',   setor:'Financeiro',  call:'Venda',  entrada:28.15, objetivo:26.64, ganho: 5.36, stop:29.50, perda:-4.80, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:false, t1:'SANB11', t2:null    },
-    { ativo:'POMO4/R',  empresa:'Marcopolo / Romi',   setor:'L&S',         call:'L&S',    entrada:1.1916,objetivo:1.3242,ganho:11.13, stop:1.0956, perda:-8.06, grafico:'Trade Idea', inicio:'25/03/26', ls:true,  entrada_ok:false, t1:'POMO4',  t2:'ROMI3' },
-    { ativo:'SUZB3/KL', empresa:'Suzano / Klabin',    setor:'L&S',         call:'L&S',    entrada:2.4839,objetivo:2.6690,ganho: 7.45, stop:2.3565, perda:-5.13, grafico:'Trade Idea', inicio:'15/04/26', ls:true,  entrada_ok:true,  t1:'SUZB3',  t2:'KLBN11'},
-    { ativo:'EQTL3/EN', empresa:'Equatorial / EnBr',  setor:'L&S',         call:'L&S',    entrada:0.8032,objetivo:0.8406,ganho: 4.66, stop:0.7787, perda:-3.05, grafico:'Trade Idea', inicio:'13/05/26', ls:true,  entrada_ok:true,  t1:'EQTL3',  t2:'ENBR3' },
+    { ativo:'POMO4/ROMI3',  empresa:'Marcopolo / Romi',   setor:'L&S',         call:'L&S',    entrada:1.1916,objetivo:1.3242,ganho:11.13, stop:1.0956, perda:-8.06, grafico:'Trade Idea', inicio:'25/03/26', ls:true,  entrada_ok:false, t1:'POMO4',  t2:'ROMI3' },
+    { ativo:'SUZB3/KLBN11', empresa:'Suzano / Klabin',    setor:'L&S',         call:'L&S',    entrada:2.4839,objetivo:2.6690,ganho: 7.45, stop:2.3565, perda:-5.13, grafico:'Trade Idea', inicio:'15/04/26', ls:true,  entrada_ok:true,  t1:'SUZB3',  t2:'KLBN11'},
+    { ativo:'EQTL3/ENBR3',  empresa:'Equatorial / EnBr',  setor:'L&S',         call:'L&S',    entrada:0.8032,objetivo:0.8406,ganho: 4.66, stop:0.7787, perda:-3.05, grafico:'Trade Idea', inicio:'13/05/26', ls:true,  entrada_ok:true,  t1:'EQTL3',  t2:'ENBR3' },
 ];
 
 const ENCERRADAS = [
@@ -837,16 +853,32 @@ function renderRecTable() {
             ? `<span class="entrada-badge">⭐ Entrada</span>`
             : `<span style="font-size:10px;color:var(--text-dim)">—</span>`;
 
-        return `<tr class="${eClass}">
-            <td>
-                <div class="ticker-cell">
-                    <div class="ticker-icon" style="background:${col}22;color:${col};border:1px solid ${col}44">${initials(r.ativo)}</div>
-                    <div>
-                        <div class="ticker-name">${r.ativo}</div>
-                        <div class="ticker-company">${r.empresa}</div>
+        // Célula Ativo — L&S mostra os dois tickers com chips Long/Short
+        const ativoCell = r.ls ? `
+            <div class="ticker-cell">
+                <div class="ticker-icon" style="background:${col}22;color:${col};border:1px solid ${col}44">L/S</div>
+                <div>
+                    <div class="ls-pair">
+                        <span class="ls-chip ls-chip-l">L</span>
+                        <span class="ls-t1">${r.t1}</span>
+                        <span class="ls-sep">/</span>
+                        <span class="ls-chip ls-chip-s">S</span>
+                        <span class="ls-t2">${r.t2}</span>
                     </div>
+                    <div class="ticker-company">${r.empresa}</div>
+                    <div class="ls-ratio-label">Preço = ratio ${r.t1}÷${r.t2}</div>
                 </div>
-            </td>
+            </div>` : `
+            <div class="ticker-cell">
+                <div class="ticker-icon" style="background:${col}22;color:${col};border:1px solid ${col}44">${initials(r.ativo)}</div>
+                <div>
+                    <div class="ticker-name">${r.ativo}</div>
+                    <div class="ticker-company">${r.empresa}</div>
+                </div>
+            </div>`;
+
+        return `<tr class="${eClass}">
+            <td>${ativoCell}</td>
             <td class="center">${callBadge(r.call)}</td>
             <td class="right" id="pc-${i}">${buildPriceCell(r, null)}</td>
             <td class="right"><span class="val-neu">${fmtPrice(r, r.entrada)}</span></td>
