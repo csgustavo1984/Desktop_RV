@@ -67,6 +67,7 @@
         .back-btn:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); }
         .breadcrumb { font-size: 13px; color: var(--text-muted); }
         .breadcrumb span { color: var(--text); font-weight: 600; }
+
         .topnav-right { display: flex; align-items: center; gap: 10px; }
         .month-badge {
             background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.35);
@@ -78,18 +79,37 @@
             font-size: 10px; color: var(--text-dim); background: var(--dark-4);
             padding: 3px 8px; border-radius: 4px; border: 1px solid var(--dark-5);
         }
-        .live-dot {
+
+        /* ── LIVE DOT ── */
+        .live-badge {
             display: inline-flex; align-items: center; gap: 6px;
-            font-size: 11px; color: var(--green);
+            font-size: 11px; color: var(--text-muted);
+            background: var(--dark-3); border: 1px solid var(--dark-5);
+            padding: 4px 10px; border-radius: 20px;
         }
-        .live-dot::before {
-            content: ''; width: 7px; height: 7px; border-radius: 50%;
-            background: var(--green); animation: pulse 2s infinite;
+        .live-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--green); flex-shrink: 0;
         }
+        .live-dot.loading { background: var(--orange); }
+        .live-dot.error   { background: var(--red); }
+        .live-dot.active  { animation: pulse 2s infinite; }
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+            0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(46,204,113,0.6); }
+            50%      { opacity: 0.7; box-shadow: 0 0 0 4px rgba(46,204,113,0); }
         }
+
+        /* ── REFRESH BTN ── */
+        .refresh-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            background: var(--dark-3); border: 1px solid var(--dark-5);
+            padding: 4px 10px; border-radius: 20px;
+            cursor: pointer; transition: all var(--tr);
+        }
+        .refresh-btn:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); }
+        .refresh-btn.spinning svg { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── HERO ── */
         .hero {
@@ -97,7 +117,7 @@
             border-bottom: 1px solid rgba(201,168,76,0.12);
             padding: 28px 28px 24px;
         }
-        .hero-inner { max-width: 1360px; margin: 0 auto; }
+        .hero-inner { max-width: 1440px; margin: 0 auto; }
         .hero-top {
             display: flex; align-items: flex-start;
             justify-content: space-between; gap: 24px; margin-bottom: 24px;
@@ -112,11 +132,7 @@
         }
 
         /* ── KPI ROW ── */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: var(--gap);
-        }
+        .kpi-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: var(--gap); }
         .kpi-card {
             background: var(--dark-3); border: 1px solid var(--dark-5);
             border-radius: var(--radius); padding: 16px 18px;
@@ -126,27 +142,26 @@
             content: ''; position: absolute;
             bottom: 0; left: 0; right: 0; height: 2px;
         }
-        .kpi-card.pos::after { background: var(--green); }
-        .kpi-card.neg::after { background: var(--red); }
-        .kpi-card.neu::after { background: var(--gold); }
-        .kpi-card.blue::after { background: var(--blue); }
+        .kpi-card.pos::after   { background: var(--green); }
+        .kpi-card.neg::after   { background: var(--red); }
+        .kpi-card.neu::after   { background: var(--gold); }
+        .kpi-card.blue::after  { background: var(--blue); }
         .kpi-label {
             font-size: 10px; font-weight: 600; text-transform: uppercase;
             letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px;
         }
         .kpi-value { font-size: 26px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
-        .kpi-value.pos { color: var(--green); }
-        .kpi-value.neg { color: var(--red); }
-        .kpi-value.neu { color: var(--gold); }
-        .kpi-value.blue { color: var(--blue); }
+        .kpi-value.pos   { color: var(--green); }
+        .kpi-value.neg   { color: var(--red); }
+        .kpi-value.neu   { color: var(--gold); }
+        .kpi-value.blue  { color: var(--blue); }
         .kpi-value.white { color: var(--text); }
         .kpi-vs { font-size: 11px; color: var(--text-dim); }
         .kpi-vs b { color: var(--text-muted); }
 
         /* ── LAYOUT ── */
-        .page { max-width: 1360px; margin: 0 auto; padding: 24px 28px 48px; }
+        .page { max-width: 1440px; margin: 0 auto; padding: 24px 28px 48px; }
         .row { display: grid; gap: var(--gap); margin-bottom: var(--gap); }
-        .row-3-1 { grid-template-columns: 3fr 1fr; }
         .row-2-1 { grid-template-columns: 2fr 1fr; }
 
         /* ── CARD ── */
@@ -177,21 +192,20 @@
             font-size: 10px; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.8px; color: var(--text-dim);
             border-bottom: 1px solid var(--dark-4); white-space: nowrap;
+            position: sticky; top: 0; background: var(--dark-2); z-index: 10;
         }
-        .rec-table thead th.right { text-align: right; }
+        .rec-table thead th.right  { text-align: right; }
         .rec-table thead th.center { text-align: center; }
         .rec-table tbody tr {
             border-bottom: 1px solid rgba(255,255,255,0.04);
             transition: background var(--tr);
         }
-        .rec-table tbody tr:hover { background: rgba(255,255,255,0.025); }
-        .rec-table tbody tr:last-child { border-bottom: none; }
-        .rec-table tbody tr.entrada-row {
-            background: rgba(201,168,76,0.04);
-        }
+        .rec-table tbody tr:hover          { background: rgba(255,255,255,0.025); }
+        .rec-table tbody tr:last-child      { border-bottom: none; }
+        .rec-table tbody tr.entrada-row     { background: rgba(201,168,76,0.04); }
         .rec-table tbody tr.entrada-row:hover { background: rgba(201,168,76,0.08); }
         .rec-table tbody td { padding: 11px 10px; vertical-align: middle; }
-        .rec-table tbody td.right { text-align: right; }
+        .rec-table tbody td.right  { text-align: right; }
         .rec-table tbody td.center { text-align: center; }
 
         /* ── TICKER CELL ── */
@@ -201,7 +215,7 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 9px; font-weight: 800; letter-spacing: -0.5px; flex-shrink: 0;
         }
-        .ticker-name { font-weight: 700; color: var(--text); font-size: 13px; }
+        .ticker-name    { font-weight: 700; color: var(--text); font-size: 13px; }
         .ticker-company { font-size: 11px; color: var(--text-muted); }
 
         /* ── CALL BADGE ── */
@@ -214,7 +228,7 @@
         .call-venda  { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(231,76,60,0.3); }
         .call-ls     { background: var(--blue-dim);  color: var(--blue);  border: 1px solid rgba(52,152,219,0.3); }
 
-        /* ── STATUS BADGE ── */
+        /* ── ENTRADA BADGE ── */
         .entrada-badge {
             display: inline-flex; align-items: center; gap: 4px;
             font-size: 10px; font-weight: 700; padding: 2px 8px;
@@ -223,7 +237,24 @@
             border: 1px solid rgba(201,168,76,0.35);
         }
 
-        /* ── VALUES ── */
+        /* ── PREÇO ATUAL CELL ── */
+        .price-cell { text-align: right; min-width: 80px; }
+        .price-cell .price-val {
+            font-size: 13px; font-weight: 700; color: var(--text);
+            display: block; line-height: 1.2;
+        }
+        .price-cell .price-delta {
+            font-size: 10px; font-weight: 700; display: block; margin-top: 2px;
+        }
+        .price-cell .price-loading {
+            font-size: 11px; color: var(--text-dim);
+        }
+        @keyframes shimmer {
+            0%,100% { opacity: 0.4; } 50% { opacity: 1; }
+        }
+        .shimmer { animation: shimmer 1.4s ease infinite; }
+
+        /* ── VALORES ── */
         .val-pos { font-weight: 700; color: var(--green); }
         .val-neg { font-weight: 700; color: var(--red); }
         .val-neu { font-weight: 600; color: var(--text); }
@@ -238,12 +269,13 @@
 
         /* ── RR BAR ── */
         .rr-wrap { display: flex; align-items: center; gap: 6px; }
-        .rr-val { font-size: 12px; font-weight: 700; color: var(--text); min-width: 30px; }
-        .rr-bar {
-            flex: 1; height: 4px; background: var(--dark-4);
-            border-radius: 2px; overflow: hidden; min-width: 40px;
-        }
-        .rr-fill { height: 100%; border-radius: 2px; background: var(--gold); }
+        .rr-val  { font-size: 12px; font-weight: 700; color: var(--text); min-width: 30px; }
+        .rr-bar  { flex:1; height:4px; background:var(--dark-4); border-radius:2px; overflow:hidden; min-width:40px; }
+        .rr-fill { height:100%; border-radius:2px; background:var(--gold); }
+
+        /* ── MINI CHART CELL ── */
+        .chart-cell { min-width: 210px; padding: 8px 10px !important; }
+        .chart-cell svg { display: block; }
 
         /* ── CHART ── */
         .chart-wrap { position: relative; height: 200px; }
@@ -256,16 +288,16 @@
             letter-spacing: 0.8px; color: var(--text-dim);
             border-bottom: 1px solid var(--dark-4); white-space: nowrap;
         }
-        .hist-table thead th.right { text-align: right; }
+        .hist-table thead th.right  { text-align: right; }
         .hist-table thead th.center { text-align: center; }
         .hist-table tbody tr {
             border-bottom: 1px solid rgba(255,255,255,0.03);
             transition: background var(--tr);
         }
-        .hist-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .hist-table tbody tr:hover    { background: rgba(255,255,255,0.02); }
         .hist-table tbody tr:last-child { border-bottom: none; }
         .hist-table tbody td { padding: 8px 10px; vertical-align: middle; }
-        .hist-table tbody td.right { text-align: right; }
+        .hist-table tbody td.right  { text-align: right; }
         .hist-table tbody td.center { text-align: center; }
 
         /* ── HIST TOGGLE ── */
@@ -277,13 +309,6 @@
             cursor: pointer; transition: all var(--tr); margin-top: 12px;
         }
         .hist-toggle-btn:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); }
-        .hist-body { overflow: hidden; }
-
-        /* ── SECTOR TAGS ── */
-        .sector-pill {
-            font-size: 10px; padding: 2px 7px; border-radius: 4px;
-            font-weight: 500; white-space: nowrap;
-        }
 
         /* ── STATS MINI ── */
         .stats-row { display: flex; flex-direction: column; gap: 10px; }
@@ -293,12 +318,10 @@
             border-radius: var(--radius-sm); border: 1px solid var(--dark-4);
         }
         .stat-mini-label { font-size: 11px; color: var(--text-muted); }
-        .stat-mini-val { font-size: 13px; font-weight: 700; }
+        .stat-mini-val   { font-size: 13px; font-weight: 700; }
 
-        /* ── ENCERRADAS CARD ── */
-        .enc-row {
-            display: flex; flex-direction: column; gap: 8px;
-        }
+        /* ── ENCERRADAS ── */
+        .enc-row { display: flex; flex-direction: column; gap: 8px; }
         .enc-item {
             background: var(--dark-3); border-radius: var(--radius-sm);
             border: 1px solid var(--dark-4); padding: 12px 14px;
@@ -306,11 +329,8 @@
         }
         .enc-item.enc-pos { border-left: 3px solid var(--green); }
         .enc-item.enc-neg { border-left: 3px solid var(--red); }
-        .enc-ticker { font-size: 13px; font-weight: 800; color: var(--text); min-width: 80px; }
-        .enc-meta { flex: 1; }
-        .enc-meta-top { font-size: 11px; color: var(--text-muted); }
-        .enc-meta-dates { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
         .enc-retorno { font-size: 15px; font-weight: 800; }
+        .enc-meta-dates { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
 
         /* ── FOOTER ── */
         .page-footer {
@@ -320,18 +340,16 @@
         }
 
         /* ── RESPONSIVE ── */
-        @media (max-width: 1100px) {
-            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 860px) {
-            .row-3-1, .row-2-1 { grid-template-columns: 1fr; }
-            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(3,1fr); } }
+        @media (max-width: 860px)  {
+            .row-2-1 { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2,1fr); }
             .hero-top { flex-direction: column; }
         }
         @media (max-width: 600px) {
             .topnav { padding: 0 14px; }
-            .hero { padding: 20px 14px; }
-            .page { padding: 16px 14px 32px; }
+            .hero   { padding: 20px 14px; }
+            .page   { padding: 16px 14px 32px; }
         }
     </style>
 </head>
@@ -344,7 +362,17 @@
         <div class="breadcrumb">Recomendações Safra · <span>Em Aberto</span></div>
     </div>
     <div class="topnav-right">
-        <span class="live-dot">Ao vivo</span>
+        <span class="live-badge">
+            <span class="live-dot loading" id="liveDot"></span>
+            <span id="liveLabel">Carregando…</span>
+        </span>
+        <button class="refresh-btn" id="refreshBtn" onclick="fetchPrices(true)" title="Atualizar preços">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M10 2A5 5 0 1 0 11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <polyline points="8,0 10,2 8,4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Atualizar
+        </button>
         <span class="month-badge">Maio 2026</span>
         <span class="mod-tag">M02</span>
     </div>
@@ -356,15 +384,13 @@
         <div class="hero-top">
             <div class="hero-title-block">
                 <h1>Recomendações em <em>Aberto</em></h1>
-                <p>Equity Research · Safra Corretora · Atualizado em 15/05/2026</p>
+                <p>Equity Research · Safra Corretora · Referência 15/05/2026 · Preços via <strong style="color:var(--text)">brapi.dev</strong></p>
                 <div class="hero-meta">
                     <span class="analyst-chip">Luana Nunes · Estrategista</span>
                     <span class="analyst-chip">Cauê Pinheiro · Estrategista</span>
                 </div>
             </div>
         </div>
-
-        <!-- KPI ROW -->
         <div class="kpi-grid">
             <div class="kpi-card neu">
                 <div class="kpi-label">Em Aberto</div>
@@ -398,7 +424,7 @@
 <!-- MAIN CONTENT -->
 <main class="page">
 
-    <!-- ROW 1: TABELA PRINCIPAL -->
+    <!-- TABELA PRINCIPAL -->
     <div class="row" style="margin-bottom:var(--gap)">
         <div class="card">
             <div class="card-title">
@@ -406,7 +432,7 @@
                     Recomendações em Aberto
                     <span class="card-count">12</span>
                 </div>
-                <span class="card-note">⭐ Valendo Entrada = entrada ainda válida conforme o relatório</span>
+                <span class="card-note" id="lastUpdated">⭐ Valendo Entrada = entrada ainda válida conforme o relatório</span>
             </div>
             <div style="overflow-x:auto">
                 <table class="rec-table">
@@ -414,11 +440,13 @@
                         <tr>
                             <th>Ativo</th>
                             <th class="center">Call</th>
+                            <th class="right">Preço Atual</th>
                             <th class="right">Entrada</th>
                             <th class="right">Objetivo</th>
                             <th class="right">Ganho Pot.</th>
                             <th class="right">Stop</th>
                             <th class="right">Perda Pot.</th>
+                            <th class="center">Visual</th>
                             <th class="right">R/R</th>
                             <th class="center">Gráfico</th>
                             <th>Início</th>
@@ -426,17 +454,14 @@
                             <th class="center">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="recTableBody">
-                    </tbody>
+                    <tbody id="recTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- ROW 2: ENCERRADAS + DISTRIBUIÇÃO -->
+    <!-- ENCERRADAS + DISTRIBUIÇÃO -->
     <div class="row row-2-1">
-
-        <!-- ENCERRADAS NO PREGÃO ANTERIOR -->
         <div class="card">
             <div class="card-title">
                 <div class="card-title-left">
@@ -447,18 +472,14 @@
             </div>
             <div class="enc-row" id="encRow"></div>
         </div>
-
-        <!-- DISTRIBUIÇÃO -->
         <div class="card">
             <div class="card-title">Distribuição</div>
-            <div class="chart-wrap">
-                <canvas id="distChart"></canvas>
-            </div>
+            <div class="chart-wrap"><canvas id="distChart"></canvas></div>
             <div class="stats-row" style="margin-top:14px" id="statsRow"></div>
         </div>
     </div>
 
-    <!-- ROW 3: HISTÓRICO -->
+    <!-- HISTÓRICO -->
     <div class="row">
         <div class="card">
             <div class="card-title">
@@ -468,8 +489,6 @@
                 </div>
                 <span class="card-note">últimos ~45 dias</span>
             </div>
-
-            <!-- Resumo do histórico -->
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
                 <div style="background:var(--green-dim);border:1px solid rgba(46,204,113,0.25);border-radius:6px;padding:10px 16px;flex:1;min-width:120px">
                     <div style="font-size:10px;color:var(--green);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Positivas</div>
@@ -492,8 +511,7 @@
                     <div style="font-size:11px;color:var(--text-dim)">operações encerradas</div>
                 </div>
             </div>
-
-            <div class="hist-body" id="histBody" style="display:none">
+            <div id="histBody" style="display:none">
                 <div style="overflow-x:auto">
                     <table class="hist-table">
                         <thead>
@@ -518,31 +536,29 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
     <div class="page-footer">
-        <strong>Aviso:</strong> Este material é preparado pela Safra Corretora e tem caráter meramente informativo. Não constitui oferta de compra ou venda de valores mobiliários.
-        Recomendamos os papéis apenas para clientes com perfil Agressivo. Desempenho passado não garante resultados futuros.
-        Analistas responsáveis: Luana Nunes e Cauê Pinheiro.
+        <strong>Aviso:</strong> Material preparado pela Safra Corretora, caráter meramente informativo.
+        Não constitui oferta de compra ou venda. Apenas para clientes com perfil Agressivo.
+        Preços em tempo real via brapi.dev — pode haver defasagem. Analistas: Luana Nunes e Cauê Pinheiro.
     </div>
-
 </main>
 
 <script>
-// ── DATA ─────────────────────────────────────────────────────────────────────
+// ─── DATA ────────────────────────────────────────────────────────────────────
 
 const RECS = [
-    { ativo:'HYPE3',     empresa:'Hypera Pharma',        setor:'Saúde',       call:'Venda',  entrada:22.66, objetivo:21.40, ganho: 5.56, stop:23.90, perda:-5.47, grafico:'Diário',     inicio:'24/04/26', ls:false, entrada_ok:false },
-    { ativo:'VALE3',     empresa:'Vale S.A.',             setor:'Mineração',   call:'Compra', entrada:82.84, objetivo:89.67, ganho: 8.24, stop:79.50, perda:-4.03, grafico:'Diário',     inicio:'12/05/26', ls:false, entrada_ok:true  },
-    { ativo:'INBR32',    empresa:'Inter & Co',            setor:'Financeiro',  call:'Compra', entrada:31.08, objetivo:33.50, ganho: 7.79, stop:28.81, perda:-7.30, grafico:'Diário',     inicio:'12/05/26', ls:false, entrada_ok:false },
-    { ativo:'ITUB4',     empresa:'Itaú Unibanco',         setor:'Financeiro',  call:'Compra', entrada:40.20, objetivo:41.45, ganho: 3.11, stop:39.00, perda:-2.99, grafico:'Diário',     inicio:'13/05/26', ls:false, entrada_ok:true  },
-    { ativo:'ASAI3',     empresa:'Assaí Atacadista',      setor:'Varejo',      call:'Venda',  entrada: 8.58, objetivo: 8.10, ganho: 5.59, stop: 8.99, perda:-4.78, grafico:'Diário',     inicio:'14/05/26', ls:false, entrada_ok:true  },
-    { ativo:'RECV3',     empresa:'PetroRecôncavo',        setor:'Petróleo',    call:'Venda',  entrada:12.13, objetivo:11.65, ganho: 3.96, stop:12.50, perda:-3.05, grafico:'Diário',     inicio:'14/05/26', ls:false, entrada_ok:true  },
-    { ativo:'AMZO34',    empresa:'Amazon (BDR)',           setor:'Tecnologia',  call:'Compra', entrada:66.10, objetivo:68.55, ganho: 3.71, stop:63.66, perda:-3.69, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:false },
-    { ativo:'GGBR4',     empresa:'Gerdau',                setor:'Siderurgia',  call:'Compra', entrada:23.79, objetivo:25.05, ganho: 5.30, stop:22.55, perda:-5.21, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:true  },
-    { ativo:'SANB11',    empresa:'Santander Brasil',      setor:'Financeiro',  call:'Venda',  entrada:28.15, objetivo:26.64, ganho: 5.36, stop:29.50, perda:-4.80, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:false },
-    { ativo:'POMO4/R',   empresa:'Marcopolo / Romi',      setor:'L&S',         call:'L&S',    entrada:1.1916, objetivo:1.3242, ganho:11.13, stop:1.0956, perda:-8.06, grafico:'Trade Idea', inicio:'25/03/26', ls:true,  entrada_ok:false },
-    { ativo:'SUZB3/KL',  empresa:'Suzano / Klabin',       setor:'L&S',         call:'L&S',    entrada:2.4839, objetivo:2.6690, ganho: 7.45, stop:2.3565, perda:-5.13, grafico:'Trade Idea', inicio:'15/04/26', ls:true,  entrada_ok:true  },
-    { ativo:'EQTL3/EN',  empresa:'Equatorial / EnBr',     setor:'L&S',         call:'L&S',    entrada:0.8032, objetivo:0.8406, ganho: 4.66, stop:0.7787, perda:-3.05, grafico:'Trade Idea', inicio:'13/05/26', ls:true,  entrada_ok:true  },
+    { ativo:'HYPE3',    empresa:'Hypera Pharma',    setor:'Saúde',       call:'Venda',  entrada:22.66, objetivo:21.40, ganho: 5.56, stop:23.90, perda:-5.47, grafico:'Diário',     inicio:'24/04/26', ls:false, entrada_ok:false, t1:'HYPE3',  t2:null    },
+    { ativo:'VALE3',    empresa:'Vale S.A.',          setor:'Mineração',   call:'Compra', entrada:82.84, objetivo:89.67, ganho: 8.24, stop:79.50, perda:-4.03, grafico:'Diário',     inicio:'12/05/26', ls:false, entrada_ok:true,  t1:'VALE3',  t2:null    },
+    { ativo:'INBR32',   empresa:'Inter & Co',         setor:'Financeiro',  call:'Compra', entrada:31.08, objetivo:33.50, ganho: 7.79, stop:28.81, perda:-7.30, grafico:'Diário',     inicio:'12/05/26', ls:false, entrada_ok:false, t1:'INBR32', t2:null    },
+    { ativo:'ITUB4',    empresa:'Itaú Unibanco',      setor:'Financeiro',  call:'Compra', entrada:40.20, objetivo:41.45, ganho: 3.11, stop:39.00, perda:-2.99, grafico:'Diário',     inicio:'13/05/26', ls:false, entrada_ok:true,  t1:'ITUB4',  t2:null    },
+    { ativo:'ASAI3',    empresa:'Assaí Atacadista',   setor:'Varejo',      call:'Venda',  entrada: 8.58, objetivo: 8.10, ganho: 5.59, stop: 8.99, perda:-4.78, grafico:'Diário',     inicio:'14/05/26', ls:false, entrada_ok:true,  t1:'ASAI3',  t2:null    },
+    { ativo:'RECV3',    empresa:'PetroRecôncavo',     setor:'Petróleo',    call:'Venda',  entrada:12.13, objetivo:11.65, ganho: 3.96, stop:12.50, perda:-3.05, grafico:'Diário',     inicio:'14/05/26', ls:false, entrada_ok:true,  t1:'RECV3',  t2:null    },
+    { ativo:'AMZO34',   empresa:'Amazon (BDR)',        setor:'Tecnologia',  call:'Compra', entrada:66.10, objetivo:68.55, ganho: 3.71, stop:63.66, perda:-3.69, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:false, t1:'AMZO34', t2:null    },
+    { ativo:'GGBR4',    empresa:'Gerdau',              setor:'Siderurgia',  call:'Compra', entrada:23.79, objetivo:25.05, ganho: 5.30, stop:22.55, perda:-5.21, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:true,  t1:'GGBR4',  t2:null    },
+    { ativo:'SANB11',   empresa:'Santander Brasil',   setor:'Financeiro',  call:'Venda',  entrada:28.15, objetivo:26.64, ganho: 5.36, stop:29.50, perda:-4.80, grafico:'Top 5',      inicio:'11/05/26', ls:false, entrada_ok:false, t1:'SANB11', t2:null    },
+    { ativo:'POMO4/R',  empresa:'Marcopolo / Romi',   setor:'L&S',         call:'L&S',    entrada:1.1916,objetivo:1.3242,ganho:11.13, stop:1.0956, perda:-8.06, grafico:'Trade Idea', inicio:'25/03/26', ls:true,  entrada_ok:false, t1:'POMO4',  t2:'ROMI3' },
+    { ativo:'SUZB3/KL', empresa:'Suzano / Klabin',    setor:'L&S',         call:'L&S',    entrada:2.4839,objetivo:2.6690,ganho: 7.45, stop:2.3565, perda:-5.13, grafico:'Trade Idea', inicio:'15/04/26', ls:true,  entrada_ok:true,  t1:'SUZB3',  t2:'KLBN11'},
+    { ativo:'EQTL3/EN', empresa:'Equatorial / EnBr',  setor:'L&S',         call:'L&S',    entrada:0.8032,objetivo:0.8406,ganho: 4.66, stop:0.7787, perda:-3.05, grafico:'Trade Idea', inicio:'13/05/26', ls:true,  entrada_ok:true,  t1:'EQTL3',  t2:'ENBR3' },
 ];
 
 const ENCERRADAS = [
@@ -594,69 +610,170 @@ const HISTORICO = [
     { ativo:'VALE3/USIM5',  call:'L&S',    inicio:'11/05/26', enc:'14/05/26', entrada:  9.17, saida:  8.64, retorno:-5.72, grafico:'Top Picks'  },
 ];
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
-
+// ─── SECTOR COLORS ───────────────────────────────────────────────────────────
 const SECTOR_COLORS = {
-    'Financeiro': '#3498DB', 'Mineração': '#C9A84C', 'Saúde': '#1ABC9C',
-    'Petróleo': '#E67E22',   'Tecnologia': '#9B59B6', 'Siderurgia': '#95A5A6',
-    'Varejo': '#2ECC71',     'L&S': '#3498DB',
+    'Financeiro':'#3498DB','Mineração':'#C9A84C','Saúde':'#1ABC9C',
+    'Petróleo':'#E67E22','Tecnologia':'#9B59B6','Siderurgia':'#95A5A6',
+    'Varejo':'#2ECC71','L&S':'#3498DB',
 };
 
-function sectorColor(setor) { return SECTOR_COLORS[setor] || '#8A97B0'; }
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function sc(setor)  { return SECTOR_COLORS[setor] || '#8A97B0'; }
 
 function callBadge(call) {
-    if (call === 'Compra') return `<span class="call-badge call-compra">↑ Compra</span>`;
-    if (call === 'Venda')  return `<span class="call-badge call-venda">↓ Venda</span>`;
+    if (call==='Compra') return `<span class="call-badge call-compra">↑ Compra</span>`;
+    if (call==='Venda')  return `<span class="call-badge call-venda">↓ Venda</span>`;
     return `<span class="call-badge call-ls">⇅ L&S</span>`;
 }
 
-function calcDias(inicioStr) {
-    const [d, m, y] = inicioStr.split('/');
-    const ini = new Date(`20${y}-${m}-${d}`);
-    const hoje = new Date('2026-05-15');
-    return Math.round((hoje - ini) / 86400000);
+function calcDias(s) {
+    const [d,m,y] = s.split('/');
+    return Math.round((new Date('2026-05-15') - new Date(`20${y}-${m}-${d}`)) / 86400000);
 }
 
-function calcRR(ganho, perda) {
-    return (Math.abs(ganho) / Math.abs(perda)).toFixed(2);
+function rrCalc(g,p) { return (Math.abs(g)/Math.abs(p)).toFixed(2); }
+
+function fmtPrice(rec, v) {
+    if (v == null) return '—';
+    return rec.ls ? v.toFixed(4) : v.toFixed(2);
 }
 
-function fmtEntrada(rec) {
-    return rec.ls ? rec.entrada.toFixed(4) : rec.entrada.toFixed(2);
-}
-function fmtObjetivo(rec) {
-    return rec.ls ? rec.objetivo.toFixed(4) : rec.objetivo.toFixed(2);
-}
-function fmtStop(rec) {
-    return rec.ls ? rec.stop.toFixed(4) : rec.stop.toFixed(2);
+function initials(ativo) { return ativo.split('/')[0].replace(/\d/g,'').substring(0,3); }
+
+// ─── MINI CHART SVG ──────────────────────────────────────────────────────────
+function buildMiniChart(rec, curr) {
+    const W = 210, H = 46;
+    const trackY = 20, trackH = 5, px = 14;
+    const tw = W - px * 2;
+
+    const stop  = rec.stop;
+    const entry = rec.entrada;
+    const obj   = rec.objetivo;
+
+    const vals = [stop, entry, obj];
+    if (curr != null) vals.push(curr);
+
+    const minV  = Math.min(...vals);
+    const maxV  = Math.max(...vals);
+    const span  = maxV - minV || Math.abs(minV) * 0.05 || 0.01;
+    const pad   = span * 0.22;
+    const lo = minV - pad, hi = maxV + pad, range = hi - lo;
+
+    const X = v => px + ((v - lo) / range) * tw;
+
+    const xs = X(stop), xe = X(entry), xo = X(obj);
+    const xc = curr != null ? X(curr) : null;
+
+    // Zone colours
+    // For Compra: green = entry→obj (right), red = stop→entry (left)
+    // For Venda:  green = obj→entry (left),  red = entry→stop (right)
+    const gainL = Math.min(xe, xo), gainR = Math.max(xe, xo);
+    const lossL = Math.min(xs, xe), lossR = Math.max(xs, xe);
+
+    // Current dot colour
+    let dotC = '#C9A84C';
+    if (xc != null) {
+        if (rec.call === 'Compra') {
+            dotC = curr > entry ? '#2ECC71' : (curr <= stop ? '#E74C3C' : '#F39C12');
+        } else if (rec.call === 'Venda') {
+            dotC = curr < entry ? '#2ECC71' : (curr >= stop ? '#E74C3C' : '#F39C12');
+        } else { // L&S
+            dotC = curr > entry ? '#2ECC71' : '#E74C3C';
+        }
+    }
+
+    // Clamp xc to visible range so it never overflows
+    const xcClamped = xc != null ? Math.max(px, Math.min(W - px, xc)) : null;
+
+    let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+
+    // ── Background track
+    s += `<rect x="${px}" y="${trackY - trackH/2}" width="${tw}" height="${trackH}" rx="2.5" fill="#243044"/>`;
+
+    // ── Loss zone (red)
+    const lw = Math.max(0, lossR - lossL);
+    if (lw > 0)
+        s += `<rect x="${lossL}" y="${trackY - trackH/2}" width="${lw}" height="${trackH}" rx="0" fill="rgba(231,76,60,0.45)"/>`;
+
+    // ── Gain zone (green)
+    const gw = Math.max(0, gainR - gainL);
+    if (gw > 0)
+        s += `<rect x="${gainL}" y="${trackY - trackH/2}" width="${gw}" height="${trackH}" rx="0" fill="rgba(46,204,113,0.45)"/>`;
+
+    // ── Stop marker (red dashed line + "S" label)
+    s += `<line x1="${xs}" y1="${trackY - 8}" x2="${xs}" y2="${trackY + 9}" stroke="#E74C3C" stroke-width="1.5" stroke-dasharray="2.5,1.5"/>`;
+    s += `<text x="${xs}" y="${H - 3}" text-anchor="middle" font-size="8" fill="#E74C3C" font-family="-apple-system,sans-serif" font-weight="700">S</text>`;
+
+    // ── Entry marker (gray circle)
+    s += `<circle cx="${xe}" cy="${trackY}" r="3.5" fill="#5A6880" stroke="#0A0E1A" stroke-width="1.5"/>`;
+
+    // ── Objetivo marker (green dashed line + "O" label)
+    s += `<line x1="${xo}" y1="${trackY - 8}" x2="${xo}" y2="${trackY + 9}" stroke="#2ECC71" stroke-width="1.5" stroke-dasharray="2.5,1.5"/>`;
+    s += `<text x="${xo}" y="${H - 3}" text-anchor="middle" font-size="8" fill="#2ECC71" font-family="-apple-system,sans-serif" font-weight="700">O</text>`;
+
+    // ── Current price dot
+    if (xcClamped != null) {
+        // Glow
+        s += `<circle cx="${xcClamped}" cy="${trackY}" r="9" fill="${dotC}" opacity="0.12"/>`;
+        // Dot with pulse
+        s += `<circle cx="${xcClamped}" cy="${trackY}" r="5.5" fill="${dotC}" stroke="#0A0E1A" stroke-width="1.5">
+                  <animate attributeName="opacity" values="1;0.55;1" dur="2.4s" repeatCount="indefinite"/>
+              </circle>`;
+        // Small price tag above dot
+        const priceLabel = rec.ls ? curr.toFixed(3) : curr.toFixed(2);
+        const labelX = Math.max(24, Math.min(W - 24, xcClamped));
+        s += `<text x="${labelX}" y="${trackY - 11}" text-anchor="middle" font-size="8" fill="${dotC}" font-family="-apple-system,sans-serif" font-weight="700">${priceLabel}</text>`;
+    } else {
+        // Loading placeholder
+        s += `<text x="${W/2}" y="${trackY + 4}" text-anchor="middle" font-size="9" fill="#5A6880" font-family="sans-serif" opacity="0.6">···</text>`;
+    }
+
+    s += `</svg>`;
+    return s;
 }
 
-function tickerInitials(ativo) {
-    const base = ativo.split('/')[0];
-    return base.replace(/[0-9]/g, '').substring(0, 3);
+// ─── PRICE CELL HTML ─────────────────────────────────────────────────────────
+function buildPriceCell(rec, curr) {
+    if (curr == null) {
+        return `<div class="price-cell">
+            <span class="price-val shimmer" style="color:var(--text-dim)">—</span>
+            <span class="price-delta shimmer" style="color:var(--text-dim)">buscando…</span>
+        </div>`;
+    }
+
+    const fmt  = rec.ls ? curr.toFixed(4) : curr.toFixed(2);
+    let   pct, color, arrow;
+
+    if (rec.call === 'Compra')     pct = (curr - rec.entrada) / rec.entrada * 100;
+    else if (rec.call === 'Venda') pct = (rec.entrada - curr) / rec.entrada * 100;
+    else                           pct = (curr - rec.entrada) / rec.entrada * 100;
+
+    color = pct >  0.05 ? 'var(--green)' : (pct < -0.05 ? 'var(--red)' : 'var(--text-muted)');
+    arrow = pct >  0.05 ? '↑' : (pct < -0.05 ? '↓' : '→');
+
+    return `<div class="price-cell">
+        <span class="price-val">${fmt}</span>
+        <span class="price-delta" style="color:${color}">${arrow} ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>
+    </div>`;
 }
 
-// ── RENDER MAIN TABLE ─────────────────────────────────────────────────────────
-
+// ─── RENDER TABLE ─────────────────────────────────────────────────────────────
 function renderRecTable() {
     const tbody = document.getElementById('recTableBody');
-    tbody.innerHTML = RECS.map(r => {
-        const dias = calcDias(r.inicio);
-        const rr = calcRR(r.ganho, r.perda);
+    tbody.innerHTML = RECS.map((r, i) => {
+        const dias  = calcDias(r.inicio);
+        const rr    = rrCalc(r.ganho, r.perda);
         const rrPct = Math.min(parseFloat(rr) / 3 * 100, 100);
-        const col = sectorColor(r.setor);
-        const entradaClass = r.entrada_ok ? 'entrada-row' : '';
+        const col   = sc(r.setor);
+        const eClass = r.entrada_ok ? 'entrada-row' : '';
         const statusCell = r.entrada_ok
             ? `<span class="entrada-badge">⭐ Entrada</span>`
             : `<span style="font-size:10px;color:var(--text-dim)">—</span>`;
 
-        return `
-        <tr class="${entradaClass}">
+        return `<tr class="${eClass}">
             <td>
                 <div class="ticker-cell">
-                    <div class="ticker-icon" style="background:${col}22;color:${col};border:1px solid ${col}44">
-                        ${tickerInitials(r.ativo)}
-                    </div>
+                    <div class="ticker-icon" style="background:${col}22;color:${col};border:1px solid ${col}44">${initials(r.ativo)}</div>
                     <div>
                         <div class="ticker-name">${r.ativo}</div>
                         <div class="ticker-company">${r.empresa}</div>
@@ -664,11 +781,13 @@ function renderRecTable() {
                 </div>
             </td>
             <td class="center">${callBadge(r.call)}</td>
-            <td class="right"><span class="val-neu">${fmtEntrada(r)}</span></td>
-            <td class="right"><span class="val-neu">${fmtObjetivo(r)}</span></td>
+            <td class="right" id="pc-${i}">${buildPriceCell(r, null)}</td>
+            <td class="right"><span class="val-neu">${fmtPrice(r, r.entrada)}</span></td>
+            <td class="right"><span class="val-neu">${fmtPrice(r, r.objetivo)}</span></td>
             <td class="right"><span class="val-pos">+${r.ganho.toFixed(2)}%</span></td>
-            <td class="right"><span class="val-neu">${fmtStop(r)}</span></td>
+            <td class="right"><span class="val-neu">${fmtPrice(r, r.stop)}</span></td>
             <td class="right"><span class="val-neg">${r.perda.toFixed(2)}%</span></td>
+            <td class="chart-cell" id="mc-${i}">${buildMiniChart(r, null)}</td>
             <td class="right">
                 <div class="rr-wrap">
                     <span class="rr-val">${rr}x</span>
@@ -677,64 +796,54 @@ function renderRecTable() {
             </td>
             <td class="center"><span class="grafico-pill">${r.grafico}</span></td>
             <td><span style="font-size:12px;color:var(--text-muted)">${r.inicio}</span></td>
-            <td class="center"><span style="font-size:12px;font-weight:700;color:${dias > 10 ? 'var(--orange)' : 'var(--text-muted)'}">${dias}d</span></td>
+            <td class="center"><span style="font-size:12px;font-weight:700;color:${dias>10?'var(--orange)':'var(--text-muted)'}">${dias}d</span></td>
             <td class="center">${statusCell}</td>
         </tr>`;
     }).join('');
 }
 
-// ── RENDER ENCERRADAS ─────────────────────────────────────────────────────────
-
+// ─── RENDER ENCERRADAS ────────────────────────────────────────────────────────
 function renderEncerradas() {
-    const cont = document.getElementById('encRow');
-    cont.innerHTML = ENCERRADAS.map(e => {
+    document.getElementById('encRow').innerHTML = ENCERRADAS.map(e => {
         const pos = e.retorno > 0;
-        return `
-        <div class="enc-item ${pos ? 'enc-pos' : 'enc-neg'}">
-            <div class="ticker-icon" style="background:${pos ? 'var(--green-dim)' : 'var(--red-dim)'};color:${pos ? 'var(--green)' : 'var(--red)'};border:1px solid ${pos ? 'rgba(46,204,113,0.3)' : 'rgba(231,76,60,0.3)'}">
-                ${tickerInitials(e.ativo)}
+        const col = sc('');
+        return `<div class="enc-item ${pos?'enc-pos':'enc-neg'}">
+            <div class="ticker-icon" style="background:${pos?'var(--green-dim)':'var(--red-dim)'};color:${pos?'var(--green)':'var(--red)'};border:1px solid ${pos?'rgba(46,204,113,0.3)':'rgba(231,76,60,0.3)'}">
+                ${initials(e.ativo)}
             </div>
-            <div class="enc-meta" style="flex:1">
+            <div style="flex:1">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
                     <span style="font-size:13px;font-weight:800;color:var(--text)">${e.ativo}</span>
                     ${callBadge(e.call)}
                 </div>
                 <div class="enc-meta-dates">${e.inicio} → ${e.enc} · entrada ${e.entrada} · saída ${e.saida} · <span class="grafico-pill">${e.grafico}</span></div>
             </div>
-            <div class="enc-retorno ${pos ? 'val-pos' : 'val-neg'}">${pos ? '+' : ''}${e.retorno.toFixed(2)}%</div>
+            <div class="enc-retorno ${pos?'val-pos':'val-neg'}">${pos?'+':''}${e.retorno.toFixed(2)}%</div>
         </div>`;
     }).join('');
 }
 
-// ── RENDER DISTRIBUIÇÃO ───────────────────────────────────────────────────────
-
+// ─── RENDER DISTRIBUIÇÃO ──────────────────────────────────────────────────────
 function renderDist() {
-    const compra = RECS.filter(r => r.call === 'Compra').length;
-    const venda  = RECS.filter(r => r.call === 'Venda').length;
-    const ls     = RECS.filter(r => r.call === 'L&S').length;
-
-    const ctx = document.getElementById('distChart').getContext('2d');
-    new Chart(ctx, {
+    const c = RECS.filter(r=>r.call==='Compra').length;
+    const v = RECS.filter(r=>r.call==='Venda').length;
+    const l = RECS.filter(r=>r.call==='L&S').length;
+    new Chart(document.getElementById('distChart').getContext('2d'), {
         type: 'doughnut',
         data: {
-            labels: ['Compra', 'Venda', 'L&S'],
-            datasets: [{
-                data: [compra, venda, ls],
-                backgroundColor: ['rgba(46,204,113,0.8)', 'rgba(231,76,60,0.8)', 'rgba(52,152,219,0.8)'],
-                borderColor: ['#2ECC71', '#E74C3C', '#3498DB'],
-                borderWidth: 2,
-            }]
+            labels: ['Compra','Venda','L&S'],
+            datasets: [{ data:[c,v,l],
+                backgroundColor:['rgba(46,204,113,0.8)','rgba(231,76,60,0.8)','rgba(52,152,219,0.8)'],
+                borderColor:['#2ECC71','#E74C3C','#3498DB'], borderWidth:2 }]
         },
         options: {
-            responsive: true, maintainAspectRatio: false,
-            cutout: '65%',
+            responsive:true, maintainAspectRatio:false, cutout:'65%',
             plugins: {
-                legend: { position: 'bottom', labels: { color: '#8A97B0', font: { size: 11 }, padding: 14 } },
-                tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} operações` } }
+                legend:{ position:'bottom', labels:{ color:'#8A97B0', font:{size:11}, padding:14 } },
+                tooltip:{ callbacks:{ label: c=>`  ${c.label}: ${c.raw} operações` } }
             }
         }
     });
-
     document.getElementById('statsRow').innerHTML = `
         <div class="stat-mini">
             <span class="stat-mini-label">Valendo Entrada</span>
@@ -742,63 +851,138 @@ function renderDist() {
         </div>
         <div class="stat-mini">
             <span class="stat-mini-label">Maior R/R</span>
-            <span class="stat-mini-val" style="color:var(--green)">${Math.max(...RECS.map(r=>parseFloat(calcRR(r.ganho,r.perda)))).toFixed(2)}x</span>
+            <span class="stat-mini-val" style="color:var(--green)">${Math.max(...RECS.map(r=>parseFloat(rrCalc(r.ganho,r.perda)))).toFixed(2)}x</span>
         </div>
         <div class="stat-mini">
             <span class="stat-mini-label">Mais antigo em aberto</span>
             <span class="stat-mini-val" style="color:var(--orange)">${Math.max(...RECS.map(r=>calcDias(r.inicio)))}d</span>
-        </div>
-    `;
+        </div>`;
 }
 
-// ── RENDER HISTÓRICO ──────────────────────────────────────────────────────────
-
+// ─── RENDER HISTÓRICO ─────────────────────────────────────────────────────────
 function renderHistorico() {
-    const pos   = HISTORICO.filter(h => h.retorno > 0);
-    const neg   = HISTORICO.filter(h => h.retorno <= 0);
-    const avg   = HISTORICO.reduce((a, h) => a + h.retorno, 0) / HISTORICO.length;
-    const acerto = (pos.length / HISTORICO.length * 100).toFixed(1);
-
+    const pos  = HISTORICO.filter(h=>h.retorno>0);
+    const neg  = HISTORICO.filter(h=>h.retorno<=0);
+    const avg  = HISTORICO.reduce((a,h)=>a+h.retorno,0) / HISTORICO.length;
     document.getElementById('histPos').textContent    = pos.length;
     document.getElementById('histPosPct').textContent = `${(pos.length/HISTORICO.length*100).toFixed(0)}% do total`;
     document.getElementById('histNeg').textContent    = neg.length;
     document.getElementById('histNegPct').textContent = `${(neg.length/HISTORICO.length*100).toFixed(0)}% do total`;
-    document.getElementById('histAvg').textContent    = `${avg >= 0 ? '+' : ''}${avg.toFixed(2)}%`;
-    document.getElementById('histAcerto').textContent = `${acerto}%`;
-
-    const tbody = document.getElementById('histTableBody');
-    tbody.innerHTML = HISTORICO.map(h => {
-        const pos = h.retorno > 0;
-        return `
-        <tr>
+    document.getElementById('histAvg').textContent    = `${avg>=0?'+':''}${avg.toFixed(2)}%`;
+    document.getElementById('histAcerto').textContent = `${(pos.length/HISTORICO.length*100).toFixed(1)}%`;
+    document.getElementById('histTableBody').innerHTML = HISTORICO.map(h => {
+        const p = h.retorno > 0;
+        return `<tr>
             <td><span style="font-weight:700;color:var(--text)">${h.ativo}</span></td>
             <td class="center">${callBadge(h.call)}</td>
             <td><span style="font-size:11px;color:var(--text-muted)">${h.inicio}</span></td>
             <td><span style="font-size:11px;color:var(--text-muted)">${h.enc}</span></td>
             <td class="right"><span style="color:var(--text-dim)">${h.entrada}</span></td>
             <td class="right"><span style="color:var(--text-dim)">${h.saida}</span></td>
-            <td class="right"><span class="${pos ? 'val-pos' : 'val-neg'}">${pos ? '+' : ''}${h.retorno.toFixed(2)}%</span></td>
+            <td class="right"><span class="${p?'val-pos':'val-neg'}">${p?'+':''}${h.retorno.toFixed(2)}%</span></td>
             <td class="center"><span class="grafico-pill">${h.grafico}</span></td>
         </tr>`;
     }).join('');
 }
 
 function toggleHist() {
-    const body = document.getElementById('histBody');
-    const btn  = document.getElementById('histToggle');
-    const open = body.style.display !== 'none';
-    body.style.display = open ? 'none' : 'block';
-    btn.textContent = open
-        ? '▼ Ver histórico completo (41 operações)'
-        : '▲ Fechar histórico';
+    const b = document.getElementById('histBody');
+    const btn = document.getElementById('histToggle');
+    const open = b.style.display !== 'none';
+    b.style.display = open ? 'none' : 'block';
+    btn.textContent = open ? '▼ Ver histórico completo (41 operações)' : '▲ Fechar histórico';
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
+// ─── REALTIME PRICES ─────────────────────────────────────────────────────────
+let priceMap = {};
 
+function setLiveState(state) {
+    const dot   = document.getElementById('liveDot');
+    const label = document.getElementById('liveLabel');
+    dot.className = 'live-dot';
+    if (state === 'loading') {
+        dot.classList.add('loading');
+        label.textContent = 'Buscando…';
+    } else if (state === 'ok') {
+        dot.classList.add('active');
+        const now = new Date();
+        label.textContent = `Atualizado ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+    } else {
+        dot.classList.add('error');
+        label.textContent = 'Erro ao buscar';
+    }
+}
+
+function getCurrentPrice(rec) {
+    if (!rec.ls) return priceMap[rec.t1] ?? null;
+    const p1 = priceMap[rec.t1];
+    const p2 = priceMap[rec.t2];
+    return (p1 != null && p2 != null && p2 !== 0) ? p1 / p2 : null;
+}
+
+function applyPrices() {
+    RECS.forEach((r, i) => {
+        const curr = getCurrentPrice(r);
+        const pcEl = document.getElementById(`pc-${i}`);
+        const mcEl = document.getElementById(`mc-${i}`);
+        if (pcEl) pcEl.innerHTML = buildPriceCell(r, curr);
+        if (mcEl) mcEl.innerHTML = buildMiniChart(r, curr);
+    });
+    // Update lastUpdated note
+    document.getElementById('lastUpdated').textContent =
+        `⭐ Valendo Entrada · Preços atualizados às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+}
+
+async function fetchPrices(manual = false) {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    setLiveState('loading');
+
+    // Collect all unique tickers
+    const tickers = [...new Set(RECS.flatMap(r => r.t2 ? [r.t1, r.t2] : [r.t1]))];
+    const url = `https://brapi.dev/api/quote/${tickers.join(',')}?fundamental=false&dividends=false`;
+
+    try {
+        const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        if (data.results && data.results.length > 0) {
+            priceMap = {};
+            data.results.forEach(q => {
+                if (q.regularMarketPrice != null)
+                    priceMap[q.symbol] = q.regularMarketPrice;
+            });
+            applyPrices();
+            setLiveState('ok');
+        } else {
+            throw new Error('Sem resultados');
+        }
+    } catch (err) {
+        console.warn('[M02] Falha ao buscar preços:', err.message);
+        setLiveState('error');
+        // Show stale state in cells without breaking layout
+        RECS.forEach((r, i) => {
+            const pcEl = document.getElementById(`pc-${i}`);
+            if (pcEl) pcEl.innerHTML = `<div class="price-cell">
+                <span class="price-val" style="color:var(--text-dim)">—</span>
+                <span class="price-delta" style="color:var(--red)">sem dados</span>
+            </div>`;
+        });
+    } finally {
+        btn.classList.remove('spinning');
+    }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 renderRecTable();
 renderEncerradas();
 renderDist();
 renderHistorico();
+
+// Fetch prices on load, then auto-refresh every 60 s
+fetchPrices();
+setInterval(() => fetchPrices(), 60000);
 </script>
 </body>
 </html>
